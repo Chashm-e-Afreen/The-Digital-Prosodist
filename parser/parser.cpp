@@ -14,6 +14,10 @@ struct Lafz
 // Modifies passed wide string by removing leading and trailing whitespace
 void trim_whitespace(std::wstring &wstr)
 {
+
+    if (wstr.empty())
+        return;
+
     wstr = wstr.substr(wstr.find_first_not_of(L' '));       // Trim the whitespace before word
     wstr = wstr.substr(0, wstr.find_last_not_of(L' ') + 1); // Trim the whitespace after word
 }
@@ -27,7 +31,12 @@ std::wstring generate_weight(std::wstring murrab)
 
     if (murrab.size() == 0) // The word string we were provided to generate weight was empty
     {
-        std::cerr << "Cannot generate weight: The word is empty\n";
+        std::cerr << "Cannot generate weight: The word is empty. \n";
+
+        std::cout << "Press any key and enter to continue.";
+        char temp;
+        std::cin >> temp;
+
         exit(-1);
     }
     else if (murrab.size() == 1) // The word only had one character
@@ -87,9 +96,15 @@ std::wstring generate_weight(std::wstring murrab)
             }
             break;
 
-            case 1618: // current letter was sakin as character next to it is symbol "sukoon"
+            case 1618: // current letter is sakin as the character next to it is symbol "sukoon"
             {
                 weight += L"0";
+            }
+            break;
+
+            case 1648: // current letter has khari zabr symbol over it
+            {
+                weight += L"10";
             }
             break;
 
@@ -137,8 +152,8 @@ std::wstring generate_weight(std::wstring murrab)
 
     wchar_t lastCharacter = murrab.back();
 
-    // We have found the last character to a symbol or character we don't need so we need to change the weight's last member to sakin
-    if (lastCharacter >= 1611 && lastCharacter <= 1631 || lastCharacter == L'ں' || lastCharacter == L'ھ')
+    // We have found the last character to a symbol or character we don't need so we need to change the weight of last alphabet  to sakin
+    if ((lastCharacter >= 1611 && lastCharacter <= 1631) || lastCharacter == 1648 || lastCharacter == L'ں' || lastCharacter == L'ھ')
     {
         weight.back() = L'0';
         return weight;
@@ -158,10 +173,14 @@ int main()
     file_write.imbue(std::locale("ur_PK.UTF8"));
 
     // Open the file to convert and check for error
-    file_read.open("../data/words_murrab.cv");
+    file_read.open("../data/words_murrab.csv");
     if (file_read.fail())
     {
-        std::cerr << "Unable to open specified file for reading.";
+        std::cerr << "Unable to open specified file for reading. Press any key and enter to continue.";
+
+        char temp; // For pausing screen
+        std::cin >> temp;
+
         exit(-1);
     }
 
@@ -169,7 +188,12 @@ int main()
     file_write.open("../data/words_murrab_weight.txt");
     if (file_write.fail())
     {
-        std::cerr << "Unable to open specified file for writing.";
+        std::cerr << "Unable to open specified file for writing. Press any key and enter to continue.";
+
+        char temp;
+        std::cin >> temp; // For pausing screen
+
+        exit(-2);
     }
 
     // This wchar variable will hold current character from the input stream as we go through all them in file
@@ -253,4 +277,8 @@ int main()
                 break;
         }
     }
+
+    std::cout << "Conversion was successful. Press any key and enter to continue.";
+    char temp;
+    std::cin >> temp;
 }
