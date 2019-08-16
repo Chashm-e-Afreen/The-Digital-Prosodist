@@ -8,16 +8,17 @@
 6. A shad is actually a sakin letter followed by the same letter but now with a harakat on it so it should have a 01 weight.
 7. A khari-zabar should be considered as a sakin harf that comes after the letter it is on however, if it comes at the end of a word it should be ignored e.g. عقبیٰ and عقبی have the same weights. 
 8. If ے or ہ occur at the end of the word the letter preceeding them will always be mutaharrik provided that it isn't ا۔
+9. If three sakins occur in a rowm ignore one of them and give them a 01 value.
 
 Status:
 
 RuleNumber      Implemented              Validated
 
-1                   true                    true
-2                   true                    true
-3                   true                    true
-4                   true                    true
-5                   true                    false
-6                   true                    false
-7                   true                    false
-8                   true                    false
+1                   	true                    true
+2                   	true                    true
+3                   	true                    true
+4                   	true                    true
+5                   	true                    false
+6                   	true                    false
+7                   	true                    false
+8                   	true                    false
