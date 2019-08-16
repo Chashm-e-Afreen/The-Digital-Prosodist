@@ -1,11 +1,7 @@
 #pragma once
-#include<wchar.h>
-#include<iostream>
-#include<string>
-#include<vector>
-#include<map>
 
-
+#include <string>
+#include <unordered_map>
 
 #ifndef _metersdef_h
 #define _metersdef_h
@@ -17,7 +13,7 @@
 #define NUM_FEET 32
 #define TOTAL_METERS  (NUM_METERS + NUM_RUBAI_METERS + NUM_HINDI_METERS)
 
-const std::map<int, int> Usage_map
+std::unordered_map<int, int> Usage_map
 {
     {13,   1},
     {14,   1},
@@ -150,7 +146,7 @@ const std::map<int, int> Usage_map
     {104,  1}
 };
 
-const std::map<const std::wstring, const std::wstring> RubaiMeter_map
+const std::unordered_map<std::wstring, const std::wstring> RubaiMeter_map
 {
     {L"10101/110101/110101/110",   L"ہزج مثمّن اخرب مکفوف مجبوب"},
     {L"10101/110101/1101010/10",   L"ہزج مثمّن اخرب مکفوف ابتر"},
@@ -166,7 +162,7 @@ const std::map<const std::wstring, const std::wstring> RubaiMeter_map
     {L"101010/10101/110101/110",   L"ہزج مثمّن اخرم اخرب مکفوف مجبوب"}
 };
 
-const std::map<const std::wstring, const std::wstring> HindiMeter_map
+const std::unordered_map<std::wstring, const std::wstring> HindiMeter_map
 {
     {L"10(10)/10(10)/10(10)/10(10)/10(10)/10(10)/10(10)/10",       L"بحرِ ہندی/ متقارب مثمن مضاعف"},
     {L"10(10)/10(10)/10(10)/10(10)/10(10)/10",					L"بحرِ ہندی/ متقارب مسدس مضاعف"},
@@ -181,7 +177,7 @@ const std::map<const std::wstring, const std::wstring> HindiMeter_map
     {L"(10)10/(10)10/(10)10/(10)",							L"بحرِ زمزمہ/ متدارک مربع مضاعف"}
 };
 
-const std::map<const std::wstring, const std::wstring> Meter_map
+const std::unordered_map<std::wstring, const std::wstring> Meter_map
 {
     {L"1101010/1101010/1101010/1101010",									L"ہزج مثمن سالم"},
     {L"1101010/1101010/1101010/11010",										L"ہزج مثمن محذوف"},
@@ -314,7 +310,7 @@ const std::map<const std::wstring, const std::wstring> Meter_map
     {L"11011010/11011010",													L"جمیل مربع سالم" }
 };
 
-const std::map<const std::wstring, const std::wstring> Arkan_map
+const std::unordered_map<std::wstring, const std::wstring> Arkan_map
 {
     {L"101010",    L"مفعولن"},
     {L"1010110",   L"مستفعلن"},
