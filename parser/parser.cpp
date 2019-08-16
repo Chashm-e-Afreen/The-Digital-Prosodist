@@ -55,9 +55,21 @@ std::wstring generate_weight(std::wstring murrab)
 
 	std::wstring weight; // Storing the weight of word (murrab if this what you call them words with symbols lol)
 
+	bool foundTwoConsecSakins = false;
+
+	int currentConsecSakinCount = 0;
+	bool wasCurrSakin = false;
+
 	int wordSize = murrab.size(); // Size of word
 
-	if (murrab[0] == L'آ') weight += L"10"; // If first letter is 'آ' then we prepend weight with "10"
+	if (murrab[0] == L'آ')
+	{
+		weight += L"10"; // If first letter is 'آ' then we prepend weight with "10"
+
+		wasCurrSakin = true; // Exceptional cases when first letter is 'آ'
+		currentConsecSakinCount = 1; // We want to start count with 1
+	}
+
 	else weight += L"1"; // Otherwise, "1" because first letter will always be mutaharik
 
 	for (int i = 1; i < wordSize - 1; i++) // loop through all except first and last characters in murrab
@@ -68,74 +80,124 @@ std::wstring generate_weight(std::wstring murrab)
 
 		switch (character) // checking the current character
 		{
-			case L' ': case L'ھ': case L'ں': // Ignore these characters
+		case L' ': case L'ھ': case L'ں': // Ignore these characters
+		{
+			continue;
+		} break;
+
+		case L'/': // Todo(!important): Wrong! We would want all checks here like we do for last character after for loop
+		{
+			weight.back() = L'0';
+			return weight;
+		} break;
+
+		default: // character is an alphabet/letter
+		{
+			int succeedingCharacterIndex = i;
+
+			// We want to skip the spaces, and characters that should not be considered between current alphabet and next
+			while (murrab[++succeedingCharacterIndex] == L' ' || murrab[succeedingCharacterIndex] == L'ھ' ||
+				   murrab[succeedingCharacterIndex] == L'ں');
+
+			wchar_t succeedingCharacter = murrab[succeedingCharacterIndex];
+
+			switch (succeedingCharacter) // checking character next to current letter (can be symbol or alphabet)
 			{
-				continue;
+			case 1617: // current letter has a shad symbol over it
+			{
+				weight += L"01";
+				wasCurrSakin = false;
 			} break;
 
-			case L'/':
+			case 1618: // current letter is sakin as the character next to it is symbol "sukoon"
 			{
-				weight.back() = L'0';
-				return weight;
+				weight += L"0";
+				wasCurrSakin = true;
+			}	break;
+
+			case 1648: // current letter has "khari zabr" symbol over it
+			{
+				weight += L"10";
+				currentConsecSakinCount = 0;
+				wasCurrSakin = true;
 			} break;
 
-			default: // character is an alphabet / letter
+			case 1611:case 1612:case 1613:case 1614:case 1615:case 1616:case 1619:case 1620:case 1621:
+			case 1622:case 1623:case 1624:case 1625:case 1626:case 1627:case 1628:case 1629:case 1630:
+			case 1631: // current letter has symbol other than sukoon,shad,khari zabr (so itغ is mutaharik)
 			{
-				int succeedingCharacterIndex = i;
+				weight += L"1";
+				wasCurrSakin = false;
+			} break;
 
-				while (murrab[++succeedingCharacterIndex] == L' '); // We want to skip the spaces between current alphabet and next alphabet
+			case L'ی': case L'و': case L'ا': case L'ے': // current letter has no symbol and succeeding character is one of the specified (it's mutaharik)
+			{
+				weight += (character != L'آ' ? L"1" : L"10");
+				wasCurrSakin = (character == L'آ');
+				currentConsecSakinCount = 0;
+			} break;
 
-				wchar_t succeedingCharacter = murrab[succeedingCharacterIndex];
+			default: // current letter has no symbol and succeeding character is not 'ی' 'و' 'ا' (it's sakin)
+			{
+				weight += (character != L'آ' ? L"0" : L"10");
+				wasCurrSakin = true;
+			} break;
 
-				switch (succeedingCharacter) // checking character next to current letter (can be symbol or alphabet)
-				{
-					case 1617: // current letter has a shad symbol over it
-					{
-						weight += L"01";
-					} break;
+			} // end of nested swtich in default section of first(checking succeeding character)
+		} // end of default section of first switch
 
-					case 1618: // current letter is sakin as the character next to it is symbol "sukoon"
-					{
-						weight += L"0";
-					}	break;
+		} // end of first swtich (checking first character)
 
-					case 1648: // current letter has "khari zabr" symbol over it
-					{
-						weight += L"10";
-					} break;
-
-					case 1611:case 1612:case 1613:case 1614:case 1615:case 1616:case 1619:case 1620:case 1621:
-					case 1622:case 1623:case 1624:case 1625:case 1626:case 1627:case 1628:case 1629:case 1630:
-					case 1631: // current letter has symbol other than sukoon,shad,khari zabr (so it is mutaharik)
-					{
-						weight += L"1";
-					} break;
-
-					case L'ی': case L'و': case L'ا': // current letter has no symbol and succeeding character is one of the specified (it's mutaharik)
-					{
-						weight += (character != L'آ' ? L"1" : L"10");
-					} break;
-
-					default: // current letter has no symbol on succeeding character is not 'ی' 'و' 'ا' (it's sakin)
-					{
-						weight += (character != L'آ' ? L"0" : L"10");
-					} break;
-				}
-			}
+		if (wasCurrSakin) // current character was sakin
+		{
+			currentConsecSakinCount++; // Increment consective sakin count
 		}
-	}
+		else // current character was not a sakin
+		{
+			// If count is 2 then we just make the last 2nd last weight value to '1' : i.e (00 -> 01)
+			if (currentConsecSakinCount == 2)
+			{
+				weight[weight.size() - 2] = L'1';
+			}
+
+			foundTwoConsecSakins = false; // Reset the flags
+			currentConsecSakinCount = 0; // Reset the count
+		}
+
+		if (currentConsecSakinCount == 2) // setting flag to true (will be helpful later if consec sakin occur 2ndlast, 3rdlast
+		{
+			foundTwoConsecSakins = true;
+		}
+		else if (currentConsecSakinCount == 3) // we have found three consective sakin (implies: foundTwoConsecSakin is true)
+		{
+			weight.pop_back(); // Ignore one sakin
+			weight.back() = L'1'; // add one
+
+			foundTwoConsecSakins = false; // reset the flags
+		}
+
+	} // end of for loop
+
 
 	wchar_t lastCharacter = murrab.back();
 
-	// We have found the last character to a symbol or character we don't need so we need to change the weight of last alphabet  to sakin
-	if ((lastCharacter >= 1611 && lastCharacter <= 1631) || lastCharacter ==  1648|| lastCharacter == L'ں' || lastCharacter == L'ھ')
+	// We have found the last character to a symbol or character we don't need so we need to change the weight of alphabet before it to sakin
+	if ((lastCharacter >= 1611 && lastCharacter <= 1631) || lastCharacter == L'ں' || lastCharacter == L'ھ')
 	{
 		weight.back() = L'0';
 		return weight;
 	}
 
+	// Last character was 'khari zabr' we need to reset (10) set in switch statements for it to (0) : i.e (10 -> 0)
+	else if (lastCharacter == 1648)
+	{
+		weight.pop_back();
+		weight.back() = L'0';
+		return weight;
+	}
+
 	// We have some exceptional cases for specified last characters
-	else if (lastCharacter == L'ے' || lastCharacter == L'ہ')
+	else if (lastCharacter == L'ہ')
 	{
 		wchar_t secondLastCharacter = murrab[wordSize - 2];
 
@@ -145,7 +207,13 @@ std::wstring generate_weight(std::wstring murrab)
 			weight.back() = L'1'; // change preceding weight to 1 "mutaharik"
 		}
 	}
-	
+
+	else if (foundTwoConsecSakins) // have we found two sakins before assumed last sakin. Change to 01 : i.e. (000 -> 01)
+	{
+		weight.back() = L'1';
+		return weight;
+	}
+
 	// return weight + "1" if 2nd last character is sakin and weight + "0" when it is not
 	return weight + (weight.back() == L'0' ? L"1" : L"0");
 }
@@ -159,14 +227,14 @@ int main()
 	// Making the file streams work with Urdu language
 	file_read.imbue(std::locale(std::locale(), new std::codecvt_utf8_utf16<wchar_t, 0x10ffff, std::consume_header>));
 	file_write.imbue(std::locale(std::locale(), new std::codecvt_utf8_utf16<wchar_t, 0x10ffff, std::consume_header>));
-	
+
 	// Open the file to convert and check for error
-	file_read.open("../data/words_murrab.csv");
+	file_read.open("../data/words_murrab_unique.csv");
 
 	if (file_read.fail())
 	{
 		std::cerr << "Unable to open specified file for reading. Press any key and enter to continue.";
-		
+
 		char temp; // For pausing screen
 		std::cin >> temp;
 
@@ -174,7 +242,7 @@ int main()
 	}
 
 	// Open the file to write and check for errors
-	file_write.open("../data/words_murrab_weight.txt");
+	file_write.open("../data/words_murrab_weight_unique.txt");
 
 	if (file_write.fail())
 	{
@@ -191,7 +259,7 @@ int main()
 
 	// Out lafz object that will store a triplet of word,murrab,weight
 	Lafz lafz;
-	
+
 	bool foundCommaDelim = false; // boolean to find out whether we have found a comma on current line (meaning end of word) 
 	bool foundEndOfLine = false;  // boolean to find out whether we have found end of current line
 	bool foundEndOfFile = false;  // boolean to find out whether we have reached end of file while parsing
