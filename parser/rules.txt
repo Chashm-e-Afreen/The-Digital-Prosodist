@@ -10,6 +10,7 @@
 8. If ے or ہ occur at the end of the word the letter preceeding them will always be mutaharrik provided that it isn't alif, ye or vow.
 9. If three sakins occur in a row ignore one of them and give them a 01 value.
 10. Two sakins that occur in a row should have a 01 weight rather than a 00.
+
 Status:
 
 RuleNumber      Implemented              Validated
@@ -22,3 +23,5 @@ RuleNumber      Implemented              Validated
 6                   	true                    false
 7                   	true                    false
 8                   	true                    false
+9                       false                   false
+10                      false                   false
