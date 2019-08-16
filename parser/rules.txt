@@ -19,7 +19,10 @@ RuleNumber      Implemented              Validated
 2                   	true                    true
 3                   	true                    true
 4                   	true                    true
-5                   	true                    false
+5                   	true                    true
 6                   	true                    false
 7                   	true                    false
 8                   	true                    false
+9                       true                    false
+10                      true                    false
+11                      false                   false
