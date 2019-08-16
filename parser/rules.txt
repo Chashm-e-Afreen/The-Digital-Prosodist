@@ -24,5 +24,6 @@ RuleNumber      Implemented              Validated
 6                   	true                    false
 7                   	true                    false
 8                   	true                    false
-9                       false                   false
-10                      false                   false
+9                       true                    false
+10                      true                    false
+11                      false                   false
