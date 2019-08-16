@@ -1,4 +1,4 @@
-Rules:
+﻿Rules:
 
 1. A binary encoding is to be used for the weights.
 2. Each mutaharrik harf should be represented by 1 and each sakin with 0.
@@ -7,7 +7,7 @@ Rules:
 5. The last letter of every word is sakin except if it is part of a murakkab-e-tauseefi or if it is preceeded by a sakin letter. In both the cases it would act as a mutaharrik(1) letter.
 6. A shad is actually a sakin letter followed by the same letter but now with a harakat on it so it should have a 01 weight.
 7. A khari-zabar should be considered as a sakin harf that comes after the letter it is on however, if it comes at the end of a word it should be ignored e.g. عقبیٰ and عقبی have the same weights. 
-8. If ے or ہ occur at the end of the word the letter preceeding them will always be mutaharrik provided that it isn't ا ، ی or و.
+8. If ے or ہ occur at the end of the word the letter preceeding them will always be mutaharrik provided that it isn't ا۔
 
 Status:
 
