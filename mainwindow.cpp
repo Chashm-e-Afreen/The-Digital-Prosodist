@@ -55,7 +55,7 @@ void MainWindow::on_pushButton_clicked()
       if (LetterToLine_find_iterator != LetterToLine_map.end())
         {
           line_to_be_read_from = LetterToLine_find_iterator->second;
-          ui->plainTextEdit->appendPlainText("");
+          //ui->plainTextEdit->appendPlainText("");
         }
       else
         {
