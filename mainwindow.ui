@@ -26,7 +26,14 @@
        <enum>QLayout::SetFixedSize</enum>
       </property>
       <item>
-       <widget class="QTextEdit" name="textEdit"/>
+       <widget class="QPlainTextEdit" name="plainTextEdit">
+        <property name="layoutDirection">
+         <enum>Qt::RightToLeft</enum>
+        </property>
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="pushButton">
@@ -45,7 +52,7 @@
      <x>0</x>
      <y>0</y>
      <width>400</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

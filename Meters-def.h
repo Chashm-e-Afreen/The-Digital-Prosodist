@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <string>
 #include <unordered_map>
@@ -13,7 +13,7 @@
 #define NUM_FEET 32
 #define TOTAL_METERS  (NUM_METERS + NUM_RUBAI_METERS + NUM_HINDI_METERS)
 
-std::unordered_map<int, int> Usage_map
+const std::unordered_map<int, int> Usage_map
 {
     {13,   1},
     {14,   1},
@@ -321,7 +321,7 @@ const std::unordered_map<std::wstring, const std::wstring> Arkan_map
     {L"10110",	   L"فاعلن"},
     {L"101110",	   L"مفتَعِلن"},
     {L"101",	   L"فاع"},
-    {L"10",		   L"فِع"},
+    {L"10",        L"فِع"},
     {L"1101010",   L"مفاعیلن"},
     {L"110101",	   L"مفاعیل"},
     {L"11010",	   L"فعولن"},
@@ -344,4 +344,43 @@ const std::unordered_map<std::wstring, const std::wstring> Arkan_map
     {L"11101101",  L"متَفاعلان"},
     {L"110110101", L"مَفاعلاتان"},
     {L"11011101",  L"مفاعِلَتان"},
+};
+
+const std::unordered_map<wchar_t, int> LetterToLine_map
+{
+    {L'آ', 1     },
+    {L'ا', 905   },
+    {L'ب', 7273  },
+    {L'پ', 61474 },
+    {L'ت', 13441 },
+    {L'ٹ', 60007 },
+    {L'ث', 18052 },
+    {L'ج', 18213 },
+    {L'چ', 67245 },
+    {L'ح', 21249 },
+    {L'خ', 22251 },
+    {L'د', 23522 },
+    {L'ڈ', 70942 },
+    {L'ذ', 26894 },
+    {L'ر', 27073 },
+    {L'ز', 29416 },
+    {L'ژ', 72228 },
+    {L'س', 30024 },
+    {L'ش', 34889 },
+    {L'ص', 36304 },
+    {L'ض', 36844 },
+    {L'ط', 37004 },
+    {L'ظ', 37507 },
+    {L'ع', 37583 },
+    {L'غ', 38714 },
+    {L'ف', 39303 },
+    {L'ق', 40454 },
+    {L'ک', 72249 },
+    {L'گ', 78089 },
+    {L'ل', 41479 },
+    {L'م', 43639 },
+    {L'ن', 54457 },
+    {L'و', 58417 },
+    {L'ہ', 81351 },
+    {L'ی', 83887 }
 };
