@@ -8,13 +8,15 @@
 #include <QTextStream>
 #include <QMessageBox>
 #include <QInputMethod>
+#include <QApplication>
+#include <QTextOption>
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    QTextOption Q;
     ui->setupUi(this);
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
-
 }
 
 MainWindow::~MainWindow()
