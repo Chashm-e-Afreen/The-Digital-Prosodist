@@ -4,7 +4,7 @@
 #include <locale>
 #include <codecvt>
 
-// Struct to store self defining attributes (weight is binary encoding of word where mutaharik = '1' and sakin = '0'
+// Struct to hold "word" itself / "murrab" word with aarab / "weight" A binary encoding of word where mutaharik = '1' and sakin = '0'
 struct Lafz
 {
 	std::wstring word;
@@ -28,10 +28,10 @@ void trim_whitespace(std::wstring& wstr)
 std::wstring generate_weight(std::wstring murrab)
 {
 	trim_whitespace(murrab);
-
+			
 	if (murrab.size() == 0) // The word string we were provided to generate weight was empty
 	{
-		std::cerr << "Cannot generate weight: The word is empty. \n";
+		std::cerr << "Cannot generate weight: The word is empty. Make sure you do not have empty line at the end of file.\n";
 
 		std::cout << "Press any key and enter to continue.";
 		char temp;
@@ -54,15 +54,18 @@ std::wstring generate_weight(std::wstring murrab)
 	// We will get here if everything is valid
 
 	std::wstring weight; // Storing the weight of word (murrab if this what you call them words with symbols lol)
+	
+	std::wstring accumulatedMurrab; // Accumulate the characters of murrab as we go through them | This variable will be used for case 11 (خَوا)
 
 	bool foundTwoConsecSakins = false;
 
 	int currentConsecSakinCount = 0;
 	bool wasCurrSakin = false;
 
+	bool stopCheckingCharacters = false;
 	int wordSize = murrab.size(); // Size of word
 
-	if (murrab[0] == L'آ')
+	if (murrab.front() == L'آ')
 	{
 		weight += L"10"; // If first letter is 'آ' then we prepend weight with "10"
 
@@ -72,11 +75,15 @@ std::wstring generate_weight(std::wstring murrab)
 
 	else weight += L"1"; // Otherwise, "1" because first letter will always be mutaharik
 
+	accumulatedMurrab += murrab.front();
+
 	for (int i = 1; i < wordSize - 1; i++) // loop through all except first and last characters in murrab
 	{
 		wchar_t character = murrab[i]; // character currently under consideration
 
-		if (character >= 1611 && character <= 1631) continue;
+		accumulatedMurrab += character;
+
+		if ((character >= 1611 && character <= 1631) || character == 1648) continue; // Ignore the symbols
 
 		switch (character) // checking the current character
 		{
@@ -85,27 +92,46 @@ std::wstring generate_weight(std::wstring murrab)
 			continue;
 		} break;
 
-		case L'/': // Todo(!important): Wrong! We would want all checks here like we do for last character after for loop
-		{
-			weight.back() = L'0';
-			return weight;
-		} break;
-
 		default: // character is an alphabet/letter
 		{
 			int succeedingCharacterIndex = i;
 
 			// We want to skip the spaces, and characters that should not be considered between current alphabet and next
-			while (murrab[++succeedingCharacterIndex] == L' ' || murrab[succeedingCharacterIndex] == L'ھ' ||
+			while (murrab[succeedingCharacterIndex++] == L' ' || murrab[succeedingCharacterIndex] == L'ھ' ||
 				   murrab[succeedingCharacterIndex] == L'ں');
 
 			wchar_t succeedingCharacter = murrab[succeedingCharacterIndex];
 
 			switch (succeedingCharacter) // checking character next to current letter (can be symbol or alphabet)
 			{
-			case 1617: // current letter has a shad symbol over it
+			case L'/': // Succeeding character is forward slash meaning end of word
 			{
-				weight += L"01";
+				murrab = murrab.substr(0, i + 1); // Update murrab to conatain characters just upto forward slash
+				trim_whitespace(murrab); // Just to be safe
+				wordSize = murrab.size(); // Update size
+				stopCheckingCharacters = true; // We have reached the end of word stop further character checking
+			} break;
+
+			case 1617: // current letter has a shad symbol over it (this is a tricky one because we can have "0" then shad = "001"-> >"011" or "00" then shad = "0001 -> 011")
+			{
+				if (currentConsecSakinCount == 1)
+				{
+					weight += L"11";
+					currentConsecSakinCount = 0;
+				}
+				else if (foundTwoConsecSakins)
+				{
+					weight.pop_back();
+					weight += L"11";
+
+					foundTwoConsecSakins = false;
+					currentConsecSakinCount = 0;
+				}
+				else
+				{
+					weight += L"01";
+				}
+
 				wasCurrSakin = false;
 			} break;
 
@@ -130,7 +156,7 @@ std::wstring generate_weight(std::wstring murrab)
 				wasCurrSakin = false;
 			} break;
 
-			case L'ی': case L'و': case L'ا': case L'ے': // current letter has no symbol and succeeding character is one of the specified (it's mutaharik)
+			case L'ی': case L'و': case L'ا': case L'ے':// current letter has no symbol and succeeding character is one of the specified (it's mutaharik)
 			{
 				weight += (character != L'آ' ? L"1" : L"10");
 				wasCurrSakin = (character == L'آ');
@@ -138,8 +164,23 @@ std::wstring generate_weight(std::wstring murrab)
 			} break;
 
 			default: // current letter has no symbol and succeeding character is not 'ی' 'و' 'ا' (it's sakin)
-			{
-				weight += (character != L'آ' ? L"0" : L"10");
+			{	
+				if (character == L'آ') 
+				{
+					if (foundTwoConsecSakins) // If succeeding
+					{
+						weight.back() = L'1';
+						foundTwoConsecSakins = false;
+					}
+
+					weight += L"10";
+					currentConsecSakinCount = 0;
+				}
+				else
+				{
+					weight += L"0";
+				}
+
 				wasCurrSakin = true;
 			} break;
 
@@ -148,6 +189,19 @@ std::wstring generate_weight(std::wstring murrab)
 
 		} // end of first swtich (checking first character)
 
+		// Our accumulatedMurrab exactly matches the signature of 'خَوا' we have a exceptional case
+		if (accumulatedMurrab == L"خَوا")
+		{
+			// خَوا is part of a word not whole word itself (we have to retain the weight state of alif and ignore weight of waoo
+			
+			wchar_t alifWeight = weight.back();
+			weight.pop_back();
+			weight.back() = alifWeight;
+		}
+
+		if (stopCheckingCharacters) break; // break out of loop if we don't want to check further characters in murrab
+		
+
 		if (wasCurrSakin) // current character was sakin
 		{
 			currentConsecSakinCount++; // Increment consective sakin count
@@ -155,7 +209,7 @@ std::wstring generate_weight(std::wstring murrab)
 		else // current character was not a sakin
 		{
 			// If count is 2 then we just make the last 2nd last weight value to '1' : i.e (00 -> 01)
-			if (currentConsecSakinCount == 2)
+			if (foundTwoConsecSakins)
 			{
 				weight[weight.size() - 2] = L'1';
 			}
@@ -174,17 +228,24 @@ std::wstring generate_weight(std::wstring murrab)
 			weight.back() = L'1'; // add one
 
 			foundTwoConsecSakins = false; // reset the flags
+			currentConsecSakinCount = 0;
 		}
 
 	} // end of for loop
 
+	if (murrab == L"خَوا") return L"10"; // Whole word was "خَوا" therefore we return "10" as per rule 11
 
 	wchar_t lastCharacter = murrab.back();
 
-	// We have found the last character to a symbol or character we don't need so we need to change the weight of alphabet before it to sakin
+	// We have found the last character to be a symbol or character we don't treat as valid letter
 	if ((lastCharacter >= 1611 && lastCharacter <= 1631) || lastCharacter == L'ں' || lastCharacter == L'ھ')
 	{
-		weight.back() = L'0';
+		if (foundTwoConsecSakins) // Just check if the 
+		{
+			weight.back() = L'1';
+			return weight;
+		}
+
 		return weight;
 	}
 
@@ -201,6 +262,9 @@ std::wstring generate_weight(std::wstring murrab)
 	{
 		wchar_t secondLastCharacter = murrab[wordSize - 2];
 
+		if ((secondLastCharacter >= 1611 && secondLastCharacter <= 1631) || secondLastCharacter == 1648)
+			secondLastCharacter = murrab[wordSize - 3];
+
 		// If second last charcter is not one of specified
 		if (secondLastCharacter != L'و' && secondLastCharacter != L'ی' && secondLastCharacter != L'ا')
 		{
@@ -208,7 +272,7 @@ std::wstring generate_weight(std::wstring murrab)
 		}
 	}
 
-	else if (foundTwoConsecSakins) // have we found two sakins before assumed last sakin. Change to 01 : i.e. (000 -> 01)
+	if (foundTwoConsecSakins) // have we found two sakins before assumed last sakin. Change to 01 : i.e. (000 -> 01)
 	{
 		weight.back() = L'1';
 		return weight;
