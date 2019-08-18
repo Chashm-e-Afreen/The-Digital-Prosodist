@@ -36,9 +36,10 @@ void MainWindow::on_pushButton_clicked()
   auto start = std::chrono::high_resolution_clock::now();
 
   QString user_entered_combined_words = ui->plainTextEdit->toPlainText();
-  QStringList user_entered_individual_words = user_entered_combined_words.split(QRegExp("\\s+"), QString::SkipEmptyParts);
-
   QString dict_file_path  = "C:/Users/Shayan Ali Abbasi/Documents/GitHub/murgh-e-chaman/data/words_murrab_weight_unique.txt";
+
+  QStringList user_entered_individual_words = user_entered_combined_words.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+  QStringList required_word_murrab_weight;
 
   QFile file_read(dict_file_path);
 
@@ -54,33 +55,29 @@ void MainWindow::on_pushButton_clicked()
 
   bool word_found = false;
   bool start_reading_from_beginning = true;
+  bool word_found_in_cache = false;
 
   int total_user_entered_words = user_entered_individual_words.size();
 
-  for (int i = 0; i < total_user_entered_words; i++)
+  for (int i = 0; i < total_user_entered_words; i++) // Start checking every word entered by the user
     {
       const QString& word = user_entered_individual_words[i];
 
-      if (i == 0)
+      if (i == 0) // If we are currently at first word add a newline
         {
           ui->plainTextEdit->insertPlainText("\n");
         }
 
-      if (rejected_cache.find(word.toStdWString()) != rejected_cache.end())
-        {
-          ui->plainTextEdit->insertPlainText("WordNotFound ");
-          continue;
-        }
+      QChar first_letter = word.front(); // Checking the first letter of current word
 
-      QChar first_letter = word.front();
+      int line_to_be_read_from = 0; // Stores from where we would like text stream to actually read line
 
-      int line_to_be_read_from = 0;
+      word_found = false; // Stores whether we have found the word in our dictionary
+      word_found_in_cache = false; // Stores whether we have found the word in our found_cache
 
-      word_found = false;
+      auto LetterToLine_find_iterator =  LetterToLine_map.find(first_letter.unicode()); // Find first character of use entered word in our letter map and its starting position in dictionary
 
-      auto LetterToLine_find_iterator =  LetterToLine_map.find(first_letter.unicode());
-
-      if (LetterToLine_find_iterator != LetterToLine_map.end())
+      if (LetterToLine_find_iterator != LetterToLine_map.end()) // We found the letter in
         {
           line_to_be_read_from = LetterToLine_find_iterator->second;
         }
@@ -91,81 +88,106 @@ void MainWindow::on_pushButton_clicked()
           continue;
         }
 
+      if (rejected_cache.find(word.toStdWString()) != rejected_cache.end())
+        {
+          ui->plainTextEdit->insertPlainText("WordNotFound ");
+          continue;
+        }
+      else
+        {
+          auto found_cache_iterator = found_cache.find(word);
+          if (found_cache_iterator != found_cache.end())
+            {
+              word_found_in_cache = true;
+              required_word_murrab_weight = found_cache_iterator->second;
+            }
+        }
+
       if (start_reading_from_beginning)
         {
           line_being_read = 0;
           text_stream.seek(0);
         }
 
-      while(!text_stream.atEnd())
+      if (!word_found_in_cache)
         {
 
-          if (++line_being_read < line_to_be_read_from)
-           {
-             text_stream.readLine();
-             continue;
-           }
-
-          QString word_murrab_weight_combined;
-
-          text_stream >> word_murrab_weight_combined;
-
-          if (word_murrab_weight_combined.isEmpty())
+          while(!text_stream.atEnd())
             {
-              continue;
-            }
 
-          QStringList word_murrab_weight_individual = word_murrab_weight_combined.split(",", QString::SkipEmptyParts);
-
-          if (word_murrab_weight_individual.size() != 3) continue;
-
-          if (word_murrab_weight_individual[0] == word || word_murrab_weight_individual[1] == word)
-            {
-              word_found = true;
-
-              QString weight = word_murrab_weight_individual[2];
-
-              found_cache.insert({word, word_murrab_weight_individual});
-
-              auto arkan_find_iterator = Arkan_map.find(weight.toStdWString());
-
-              if (arkan_find_iterator != Arkan_map.end())
+              if (++line_being_read < line_to_be_read_from)
                 {
-                  std::wstring arkan_value_ws = arkan_find_iterator->second;
-                  QString arkan_value = QString::fromStdWString(arkan_value_ws);
-
-                  ui->plainTextEdit->insertPlainText(arkan_value + " ");
+                  text_stream.readLine();
+                  continue;
                 }
 
-              else
+              QString word_murrab_weight_combined;
+
+              text_stream >> word_murrab_weight_combined;
+
+              if (word_murrab_weight_combined.isEmpty())
                 {
-                  ui->plainTextEdit->insertPlainText("NoRukanFound ");
+                  continue;
                 }
 
-              if (i + 1 < total_user_entered_words)
+              QStringList word_murrab_weight_individual = word_murrab_weight_combined.split(",", QString::SkipEmptyParts);
+
+              if (word_murrab_weight_individual.size() != 3) continue;
+
+              if (word_murrab_weight_individual[0] == word || word_murrab_weight_individual[1] == word)
                 {
-                  QChar succeeding_word_first_letter = user_entered_individual_words[i + 1].front();
+                  word_found = true;
+                  required_word_murrab_weight = word_murrab_weight_individual;
+                  found_cache.insert({word, required_word_murrab_weight});
 
-                  auto find_iterator = LetterToLine_map.find(succeeding_word_first_letter.unicode());
-
-                  if (find_iterator != LetterToLine_map.end() && find_iterator->second > line_being_read)
-                  {
-                    start_reading_from_beginning = false;
-                    break;
-                  }
+                  break;
                 }
-
-              start_reading_from_beginning = true;
-              break;
             }
         }
 
-          if (!word_found)
+      if (word_found || word_found_in_cache) // We found the word in our dictionary or cache
+        {
+          QString weight = required_word_murrab_weight[2];
+
+          auto arkan_find_iterator = Arkan_map.find(weight.toStdWString());
+
+          if (arkan_find_iterator != Arkan_map.end())
             {
-              rejected_cache.insert(word.toStdWString());
-              start_reading_from_beginning = true;
-              ui->plainTextEdit->insertPlainText("WordNotFound ");
+              std::wstring arkan_value_ws = arkan_find_iterator->second;
+              QString arkan_value = QString::fromStdWString(arkan_value_ws);
+
+              ui->plainTextEdit->insertPlainText(arkan_value + " ");
             }
+
+          else
+            {
+              ui->plainTextEdit->insertPlainText("NoRukanFound ");
+            }
+
+          if (i + 1 < total_user_entered_words)
+            {
+              QChar succeeding_word_first_letter = user_entered_individual_words[i + 1].front();
+
+              auto find_iterator = LetterToLine_map.find(succeeding_word_first_letter.unicode());
+
+              if (find_iterator != LetterToLine_map.end() && find_iterator->second > line_being_read)
+                {
+                  start_reading_from_beginning = false;
+                  continue;
+                }
+            }
+
+          start_reading_from_beginning = true;
+        }
+
+      else // We didn't find the word entered by user in our dictionary and cache
+        {
+          rejected_cache.insert(word.toStdWString());
+
+          ui->plainTextEdit->insertPlainText("WordNotFound ");
+
+          start_reading_from_beginning = true;
+        }
     }
 
   file_read.close();
