@@ -110,7 +110,6 @@ void MainWindow::on_pushButton_clicked()
 
       if (!word_found_in_cache)
         {
-
           while(!text_stream.atEnd())
             {
 
@@ -122,7 +121,7 @@ void MainWindow::on_pushButton_clicked()
 
               QString word_murrab_weight_combined;
 
-              text_stream >> word_murrab_weight_combined;
+              word_murrab_weight_combined = text_stream.readLine();
 
               if (word_murrab_weight_combined.isEmpty())
                 {
