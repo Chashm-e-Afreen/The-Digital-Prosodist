@@ -7,7 +7,6 @@
 #include <QFile>
 #include <QTextStream>
 #include <QMessageBox>
-#include <QShortcut>
 #include <chrono>
 
 #define FILE_LINE_SIZE 53
@@ -36,7 +35,7 @@ void MainWindow::on_pushButton_clicked()
   auto start = std::chrono::high_resolution_clock::now();
 
   QString user_entered_combined_words = ui->textEdit->toPlainText();
-  QString dict_file_path  = "C:/Users/Muhammad Rehan/Documents/GitHub\murgh-e-chaman/words_murrab_weight_unique.txt";
+  QString dict_file_path  = "data/words_murrab_weight_unique.txt";
 
   QStringList user_entered_individual_words = user_entered_combined_words.split(QRegExp("\\s+"), QString::SkipEmptyParts);
   QStringList required_word_murrab_weight;

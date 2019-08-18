@@ -5,7 +5,7 @@
 
 #include <map>
 #include <unordered_set>
-
+#include <QShortcut>
 namespace Ui {
 class MainWindow;
 }
