@@ -35,7 +35,7 @@ void MainWindow::on_pushButton_clicked()
 
   auto start = std::chrono::high_resolution_clock::now();
 
-  QString user_entered_combined_words = ui->plainTextEdit->toPlainText();
+  QString user_entered_combined_words = ui->textEdit->toPlainText();
   QString dict_file_path  = "C:/Users/Shayan Ali Abbasi/Documents/GitHub/murgh-e-chaman/data/words_murrab_weight_unique.txt";
 
   QStringList user_entered_individual_words = user_entered_combined_words.split(QRegExp("\\s+"), QString::SkipEmptyParts);
@@ -65,7 +65,7 @@ void MainWindow::on_pushButton_clicked()
 
       if (i == 0) // If we are currently at first word add a newline
         {
-          ui->plainTextEdit->insertPlainText("\n");
+          ui->textEdit->insertPlainText("\n");
         }
 
       QChar first_letter = word.front(); // Checking the first letter of current word
@@ -84,13 +84,13 @@ void MainWindow::on_pushButton_clicked()
       else
         {
           rejected_cache.insert(word.toStdWString());
-          ui->plainTextEdit->insertPlainText("WordNotFound ");
+          ui->textEdit->insertPlainText("WordNotFound ");
           continue;
         }
 
       if (rejected_cache.find(word.toStdWString()) != rejected_cache.end())
         {
-          ui->plainTextEdit->insertPlainText("WordNotFound ");
+          ui->textEdit->insertPlainText("WordNotFound ");
           continue;
         }
       else
@@ -142,6 +142,10 @@ void MainWindow::on_pushButton_clicked()
 
                   break;
                 }
+              else if (word_murrab_weight_individual[0].front() != first_letter) // If the first letter of user entered word no longer matches that read from file we stop reading from file
+                {
+                  break;
+                }
             }
         }
 
@@ -156,12 +160,12 @@ void MainWindow::on_pushButton_clicked()
               std::wstring arkan_value_ws = arkan_find_iterator->second;
               QString arkan_value = QString::fromStdWString(arkan_value_ws);
 
-              ui->plainTextEdit->insertPlainText(arkan_value + " ");
+              ui->textEdit->insertPlainText(arkan_value + " ");
             }
 
           else
             {
-              ui->plainTextEdit->insertPlainText("NoRukanFound ");
+              ui->textEdit->insertPlainText("NoRukanFound ");
             }
 
           if (i + 1 < total_user_entered_words)
@@ -184,7 +188,7 @@ void MainWindow::on_pushButton_clicked()
         {
           rejected_cache.insert(word.toStdWString());
 
-          ui->plainTextEdit->insertPlainText("WordNotFound ");
+          ui->textEdit->insertPlainText("WordNotFound ");
 
           start_reading_from_beginning = true;
         }
