@@ -3,10 +3,6 @@
 #include <string>
 #include <unordered_map>
 
-#ifndef _metersdef_h
-#define _metersdef_h
-#endif
-
 #define NUM_METERS 129
 #define NUM_RUBAI_METERS 12
 #define NUM_HINDI_METERS 11
@@ -380,5 +376,6 @@ const std::unordered_map<wchar_t, int> LetterToLine_map
     {L'ن', 54457 },
     {L'و', 58417 },
     {L'ہ', 81351 },
-    {L'ی', 83887 }
+    {L'ی', 83887 },
+    {L'ے', 84425 }
 };
