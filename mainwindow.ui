@@ -18,6 +18,9 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="toolTip">
+   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ctrl + Enter&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+  </property>
   <property name="layoutDirection">
    <enum>Qt::RightToLeft</enum>
   </property>
@@ -38,18 +41,27 @@
           <pointsize>16</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ctrl + Enter&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="layoutDirection">
          <enum>Qt::RightToLeft</enum>
         </property>
         <property name="locale">
          <locale language="Urdu" country="Pakistan"/>
         </property>
+        <property name="plainText">
+         <string/>
+        </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="pushButton">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="text">
-         <string>PushButton</string>
+         <string>Submit</string>
         </property>
        </widget>
       </item>
@@ -63,7 +75,7 @@
      <x>0</x>
      <y>0</y>
      <width>400</width>
-     <height>17</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

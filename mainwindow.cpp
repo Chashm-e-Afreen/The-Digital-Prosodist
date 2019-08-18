@@ -7,14 +7,20 @@
 #include <QFile>
 #include <QTextStream>
 #include <QMessageBox>
+#include <QShortcut>
+#include <chrono>
 
-#include <Windows.h>
+#define FILE_LINE_SIZE 53
 
 MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
   ui(new Ui::MainWindow)
 {
   ui->setupUi(this);
+
+  push_button_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Return), this);
+
+  connect(this->push_button_shortcut, SIGNAL(activated()), this, SLOT(on_pushButton_clicked()));
 
   QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 }
@@ -26,6 +32,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
+
+  auto start = std::chrono::high_resolution_clock::now();
 
   QString user_entered_combined_words = ui->plainTextEdit->toPlainText();
   QStringList user_entered_individual_words = user_entered_combined_words.split(QRegExp("\\s+"), QString::SkipEmptyParts);
@@ -44,56 +52,80 @@ void MainWindow::on_pushButton_clicked()
 
   int line_being_read = 0;
 
+  bool word_found = false;
   bool start_reading_from_beginning = true;
 
   int total_user_entered_words = user_entered_individual_words.size();
-
 
   for (int i = 0; i < total_user_entered_words; i++)
     {
       const QString& word = user_entered_individual_words[i];
 
+      if (i == 0)
+        {
+          ui->plainTextEdit->insertPlainText("\n");
+        }
+
+      if (rejected_cache.find(word.toStdWString()) != rejected_cache.end())
+        {
+          ui->plainTextEdit->insertPlainText("WordNotFound ");
+          continue;
+        }
+
       QChar first_letter = word.front();
 
       int line_to_be_read_from = 0;
+
+      word_found = false;
 
       auto LetterToLine_find_iterator =  LetterToLine_map.find(first_letter.unicode());
 
       if (LetterToLine_find_iterator != LetterToLine_map.end())
         {
           line_to_be_read_from = LetterToLine_find_iterator->second;
-          ui->plainTextEdit->insertPlainText("\n");
         }
       else
         {
-          ui->plainTextEdit->insertPlainText("\nNot_Found ");
+          rejected_cache.insert(word.toStdWString());
+          ui->plainTextEdit->insertPlainText("WordNotFound ");
           continue;
         }
 
       if (start_reading_from_beginning)
         {
           line_being_read = 0;
-         text_stream.seek(0);
+          text_stream.seek(0);
         }
 
       while(!text_stream.atEnd())
         {
 
           if (++line_being_read < line_to_be_read_from)
-            {
-              text_stream.readLine();
-              continue;
-            }
+           {
+             text_stream.readLine();
+             continue;
+           }
 
           QString word_murrab_weight_combined;
 
           text_stream >> word_murrab_weight_combined;
 
-          QStringList word_murrab_weight_individual = word_murrab_weight_combined.split(",");
+          if (word_murrab_weight_combined.isEmpty())
+            {
+              continue;
+            }
+
+          QStringList word_murrab_weight_individual = word_murrab_weight_combined.split(",", QString::SkipEmptyParts);
+
+          if (word_murrab_weight_individual.size() != 3) continue;
 
           if (word_murrab_weight_individual[0] == word || word_murrab_weight_individual[1] == word)
             {
+              word_found = true;
+
               QString weight = word_murrab_weight_individual[2];
+
+              found_cache.insert({word, word_murrab_weight_individual});
 
               auto arkan_find_iterator = Arkan_map.find(weight.toStdWString());
 
@@ -107,7 +139,7 @@ void MainWindow::on_pushButton_clicked()
 
               else
                 {
-                  ui->plainTextEdit->insertPlainText("No Rukan found");
+                  ui->plainTextEdit->insertPlainText("NoRukanFound ");
                 }
 
               if (i + 1 < total_user_entered_words)
@@ -116,8 +148,7 @@ void MainWindow::on_pushButton_clicked()
 
                   auto find_iterator = LetterToLine_map.find(succeeding_word_first_letter.unicode());
 
-                  int letters_line_position = find_iterator->second;
-                  if (find_iterator != LetterToLine_map.end() && letters_line_position > line_being_read)
+                  if (find_iterator != LetterToLine_map.end() && find_iterator->second > line_being_read)
                   {
                     start_reading_from_beginning = false;
                     break;
@@ -128,8 +159,18 @@ void MainWindow::on_pushButton_clicked()
               break;
             }
         }
+
+          if (!word_found)
+            {
+              rejected_cache.insert(word.toStdWString());
+              start_reading_from_beginning = true;
+              ui->plainTextEdit->insertPlainText("WordNotFound ");
+            }
     }
 
   file_read.close();
 
+  std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
+
+  QTextStream(stdout) << "Time elapsed: " << end.count() << "\n";
 }
