@@ -33,6 +33,16 @@ MainWindow::MainWindow(QWidget *parent) :
 
   text_stream.setDevice(&file_read);
 
+  std::map<QString, QString> my_map;
+
+  while(text_stream.atEnd())
+    {
+
+      QStringList line = text_stream.readLine().split(',');
+
+      my_map.insert({line[0], line[1]});
+    }
+
 }
 
 MainWindow::~MainWindow()
@@ -187,6 +197,42 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
   return words_murrabs_weights;
 }
 
+void MainWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_per_line)
+{
+  int size = words_murrab_weight_per_line.size();
+
+  if (size <= 0)
+       return;
+
+  ui->textEdit->insertPlainText(u8"\nارکان: ");
+
+  for (int i = 0; i < size; i++)
+    {
+      if (words_murrab_weight_per_line[i].size() != 3)
+        {
+          ui->textEdit->insertPlainText(" X ");
+          continue;
+        }
+
+      const QString weight = words_murrab_weight_per_line[i][2];
+
+      auto arkaan_find_iterator = Arkan_map.find(weight.toStdWString());
+
+      if (arkaan_find_iterator != Arkan_map.end())
+        {
+          const QString rukan = QString::fromStdWString(arkaan_find_iterator->second);
+
+          ui->textEdit->insertPlainText(rukan + " ");
+        }
+      else
+        {
+           ui->textEdit->insertPlainText(" X ");
+        }
+
+    }
+
+}
+
 void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_per_line)
 {
   int size = words_murrab_weight_per_line.size();
@@ -194,7 +240,7 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
   if(size <= 0)
     return;
 
-  ui->textEdit->insertPlainText("\nMeter: ");
+  ui->textEdit->insertPlainText(u8"\nبحر: ");
 
   QString accumulated_weight;
 
@@ -209,13 +255,13 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
 
     if (meters_find_iterator != Meter_map.end())
       {
-        QString meter_value = QString::fromStdWString(meters_find_iterator->second);
+        const QString meter_value = QString::fromStdWString(meters_find_iterator->second);
 
-        ui->textEdit->insertPlainText(meter_value);
+        ui->textEdit->insertPlainText(meter_value + " (" + accumulated_weight + ")");
       }
     else
       {
-       ui->textEdit->insertPlainText("Not Found\n");
+       ui->textEdit->insertPlainText(u8" کوئ بحر نہیں مل سکا (" + accumulated_weight + ")");
       }
 }
 
@@ -233,6 +279,7 @@ void MainWindow::on_pushButton_clicked()
       words_murrabs_weights_per_line = get_murrab_weight(line);
 
       display_meters(words_murrabs_weights_per_line);
+      display_arkans(words_murrabs_weights_per_line);
     }
 
   std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
