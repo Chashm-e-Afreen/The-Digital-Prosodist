@@ -210,7 +210,7 @@ void MainWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_
     {
       if (words_murrab_weight_per_line[i].size() != 3)
         {
-          ui->textEdit->insertPlainText(" X ");
+          ui->textEdit->insertHtml("<span style='color:red'> X </span>");
           continue;
         }
 
@@ -226,7 +226,7 @@ void MainWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_
         }
       else
         {
-           ui->textEdit->insertPlainText(" X ");
+           ui->textEdit->insertHtml("<span style='color:red'> X </span>");
         }
 
     }
@@ -261,7 +261,7 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
       }
     else
       {
-       ui->textEdit->insertPlainText(u8" کوئ بحر نہیں مل سکا (" + accumulated_weight + ")");
+       ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئ بحر نہیں مل سکا </span> (" + accumulated_weight + ")");
       }
 }
 
