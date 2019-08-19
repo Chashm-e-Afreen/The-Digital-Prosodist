@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
   QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 
 
-  QString dict_file_path = "data/words_murrab_weight_unique.txt";
+  QString dict_file_path = "C:/Users/Muhammad Rehan/Documents/GitHub/murgh-e-chaman/data/words_murrab_weight_unique.txt";
 
   QFile file_read(dict_file_path);
 
