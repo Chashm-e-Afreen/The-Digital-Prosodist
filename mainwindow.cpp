@@ -97,7 +97,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
 
       word_found = false; // Stores whether we have found the word in our dictionary
 
-      auto LetterToLine_find_iterator =  LetterToLine_map.find(first_letter.unicode()); // Find first character of use entered word in our letter map and its starting position in dictionary
+      auto LetterToLine_find_iterator =  LetterToLine_map.find(first_letter.unicode()); // Find first character of user entered word in our letter map and its starting position in dictionary
 
       if (LetterToLine_find_iterator != LetterToLine_map.end()) // We found the letter in LetterToLine_map
         {
@@ -204,7 +204,7 @@ void MainWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_
   if (size <= 0)
        return;
 
-  ui->textEdit->insertPlainText(u8"\nارکان: ");
+  ui->textEdit->insertPlainText(u8"\nتحلیلِ الفاظ: ");
 
   for (int i = 0; i < size; i++)
     {
@@ -240,7 +240,7 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
   if(size <= 0)
     return;
 
-  ui->textEdit->insertPlainText(u8"\nبحر: ");
+  ui->textEdit->insertPlainText(u8"\nافاعیل: ");
 
   QString accumulated_weight;
 
@@ -261,7 +261,38 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
       }
     else
       {
-       ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئ بحر نہیں مل سکا </span> (" + accumulated_weight + ")");
+       ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئ بحر نہیں مل سکی </span> (" + accumulated_weight + ")");
+      }
+}
+
+void MainWindow::display_names(const QVector<QStringList>& words_murrab_weight_per_line)
+{
+  int size = words_murrab_weight_per_line.size();
+
+  if(size <= 0)
+    return;
+
+  ui->textEdit->insertPlainText(u8"\nبحر: ");
+
+  QString accumulated_weight;
+
+  for (int i = 0; i < size; i++)
+    {
+      if (words_murrab_weight_per_line[i].size() != 3) continue;
+
+      accumulated_weight += words_murrab_weight_per_line[i][2];
+    }
+
+    auto meters_find_iterator = Names_map.find(accumulated_weight.toStdWString());
+
+    if (meters_find_iterator != Names_map.end())
+      {
+        const QString name_value = QString::fromStdWString(meters_find_iterator->second);
+
+        ui->textEdit->insertPlainText(name_value);
+      }    else
+      {
+       ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئ بحر نہیں مل سکی </span> (" + accumulated_weight + ")");
       }
 }
 
@@ -280,6 +311,7 @@ void MainWindow::on_pushButton_clicked()
 
       display_meters(words_murrabs_weights_per_line);
       display_arkans(words_murrabs_weights_per_line);
+      display_names(words_murrabs_weights_per_line);
     }
 
   std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
