@@ -193,7 +193,6 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
           start_reading_from_beginning = true;
         }
     }
-
   return words_murrabs_weights;
 }
 
