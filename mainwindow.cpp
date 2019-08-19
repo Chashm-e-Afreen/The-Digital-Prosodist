@@ -238,7 +238,7 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
               QString new_accumulated_weight_two = new_accumulated_weight_one;
 
-              new_accumulated_weight_two += "0";
+              new_accumulated_weight_two += '0';
 
               accumulated_weights.push_back(new_accumulated_weight_one);
               accumulated_weights.push_back(new_accumulated_weight_two);
