@@ -102,8 +102,8 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
 
       QChar first_letter = word.front(); // Checking the first letter of current word
 
-      auto LetterToLine_find_iterator =  LetterToLine_map.find(first_letter.unicode()); // Find first character of user entered word in our letter map and its starting position in dictionary
-      if (LetterToLine_find_iterator == LetterToLine_map.end()) // We did't find the letter in LetterToLine_map
+      auto AllowedFirstLetter_find_iterator =  AllowedFirstLetter_set.find(first_letter.unicode()); // Find first character of user entered word in our letter map and its starting position in dictionary
+      if (AllowedFirstLetter_find_iterator == AllowedFirstLetter_set.end()) // We did't find the letter in AllowedFirstLetter_set
         {
           rejected_cache.insert(word);
           continue;
@@ -310,7 +310,7 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
 
   if (!found_meter)
     {
-      ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی مانوس بحر نہیں مل سکی </span> (" ")");
+      ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی مانوس بحر نہیں مل سکی </span>|");
     }
 
 
@@ -325,7 +325,7 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
     }
   else
     {
-      ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی بحر نہیں مل سکی </span>");
+      ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی بحر نہیں مل سکی </span>|");
     }
 
   std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
