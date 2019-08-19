@@ -149,7 +149,7 @@ void MainWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_
     {
       if (words_murrab_weight_per_line[i].size() != 3)
         {
-          ui->textEdit->insertHtml(u8"<span style='color:red'>'X' </span>");
+          ui->textEdit->insertHtml(u8"'<span style='color:red'>X</span>' ");
           continue;
         }
 
