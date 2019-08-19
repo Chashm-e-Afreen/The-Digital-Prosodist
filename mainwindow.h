@@ -33,6 +33,8 @@ private:
     QVector<QStringList> get_user_input();
     QVector<QStringList> get_murrab_weight(const QStringList& user_entered_line);
 
+    QVector<QString> get_accumulated_weight(const QVector<QStringList>& words_murrab_weight_per_line);
+
     void display_arkans(const QVector<QStringList>& words_murrab_weight_per_line);
     void display_meters(const QVector<QStringList>& words_murrab_weight_per_line);
     void display_names(const QVector<QStringList>& words_murrab_weight_per_line);
