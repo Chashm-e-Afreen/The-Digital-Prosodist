@@ -340,6 +340,7 @@ const std::unordered_map<std::wstring, const std::wstring> Arkan_map
     {L"11101101",  L"متَفاعلان"},
     {L"110110101", L"مَفاعلاتان"},
     {L"11011101",  L"مفاعِلَتان"},
+    {L"1",  L"فِ"},
 };
 
 const std::unordered_map<wchar_t, int> LetterToLine_map
