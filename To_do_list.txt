@@ -1,0 +1,2 @@
+1. Adding the functionality for alif-e-wasl.
+2. Dealing with homophones i.e. words with the same spelling but different weights. 
