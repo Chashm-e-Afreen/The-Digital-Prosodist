@@ -92,7 +92,13 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
 
   for (int i = 0; i < user_entered_line.size(); i++)
     {
-      const QString& word = user_entered_line[i];
+      QString word = user_entered_line[i];
+
+      bool found_zaer = ( word.back() == L'ِ' );
+
+      // Chop (remove) the zer if we found it at the end of the word
+      if (found_zaer)
+        word.chop(1);
 
       QChar first_letter = word.front(); // Checking the first letter of current word
 
@@ -103,6 +109,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
           continue;
         }
 
+
       if (rejected_cache.find(word) != rejected_cache.end())
         {
           continue;
@@ -112,15 +119,25 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
       if (found_cache_find_iterator != found_cache.end())
         {
           words_murrabs_weights[i] = found_cache_find_iterator.value();
+          if (found_zaer)
+            {
+              words_murrabs_weights[i][0] = user_entered_line[0];
+            }
           continue;
         }
 
-      auto dict_cache_find_iterator = dict_cache.find(user_entered_line[i]);
-
+      auto dict_cache_find_iterator = dict_cache.find(word);
       if (dict_cache_find_iterator != dict_cache.end())
         {
           words_murrabs_weights[i] = dict_cache_find_iterator.value();
-          found_cache.insert(word, dict_cache_find_iterator.value());
+
+          if (found_zaer)
+            {
+              words_murrabs_weights[i][0] = user_entered_line[0];
+            }
+
+          found_cache.insert(user_entered_line[i], dict_cache_find_iterator.value());
+
         }
       else
         {
@@ -176,27 +193,26 @@ void MainWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_
   QTextStream(stdout) << "Displaying Arkans: " << end.count() << "\n";
 }
 
-void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_per_line)
+QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& words_murrab_weight_per_line)
 {
   auto start = std::chrono::high_resolution_clock::now();
 
   int size = words_murrab_weight_per_line.size();
 
   if(size <= 0)
-    return;
+    return QVector<QString>();
 
   QVector<QString> accumulated_weights(1); // There will always be one accumulated weight
 
   int new_accumulated_weight_size = accumulated_weights.size();
   int prev_accumulated_weight_size = new_accumulated_weight_size;
 
-  bool found_meter = false;
-
   for (int i = 0; i < size; i++) // Iterating every word
     {
       if (words_murrab_weight_per_line[i].size() != 3) continue;
 
       const QString& individual_word = words_murrab_weight_per_line[i][0];
+      const QString& last_two_letters = individual_word.chopped(2);
       const QString& individual_weight = words_murrab_weight_per_line[i][2];
 
       QChar last_letter = individual_word.back();
@@ -221,9 +237,50 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
             }
 
         }
+      else if(last_letter == L'ِ' || last_letter == L'ۂ' || last_two_letters == "ئے")
+        {
+          for (int k = 0; k < prev_accumulated_weight_size; k++)
+            {
+              QString new_accumulated_weight_one = accumulated_weights[k];
+
+              new_accumulated_weight_one.back() = '1';
+
+              QString new_accumulated_weight_two = new_accumulated_weight_one;
+
+              new_accumulated_weight_two += "0";
+
+              accumulated_weights.push_back(new_accumulated_weight_one);
+              accumulated_weights.push_back(new_accumulated_weight_two);
+
+              new_accumulated_weight_size += 2;
+            }
+        }
 
       prev_accumulated_weight_size = new_accumulated_weight_size;
     }
+
+
+  std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
+
+  QTextStream(stdout) << "Displaying Meters: " << end.count() << "\n";
+
+  return accumulated_weights;
+}
+
+void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_per_line)
+{
+  auto start = std::chrono::high_resolution_clock::now();
+
+  int size = words_murrab_weight_per_line.size();
+
+  if(size <= 0)
+    return;
+
+  QVector<QString> accumulated_weights = get_accumulated_weight(words_murrab_weight_per_line);
+
+
+  bool found_meter = false;
+
 
   ui->textEdit->insertPlainText(u8"\nافاعیل: ");
 
@@ -241,7 +298,6 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
           found_meter = true;
           break;
         }
-
     }
 
   if (!found_meter)
