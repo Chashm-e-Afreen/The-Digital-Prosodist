@@ -3,9 +3,6 @@
 
 #include <QMainWindow>
 #include <QShortcut>
-#include <QTextStream>
-#include <QFile>
-#include <QTextStream>
 #include <QVector>
 #include <QHash>
 #include <QSet>
@@ -32,11 +29,6 @@ private:
     QHash<QString, QStringList> dict_cache;
     QHash<QString, QStringList> found_cache;
     QSet<QString> rejected_cache;
-
-    QFile file_read;
-    QTextStream text_stream;
-    QString dict_file_path;
-
 
     QVector<QStringList> get_user_input();
     QVector<QStringList> get_murrab_weight(const QStringList& user_entered_line);

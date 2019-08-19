@@ -23,9 +23,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
   QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 
-  dict_file_path  = "data/words_murrab_weight_unique.txt";
 
-  file_read.setFileName(dict_file_path);
+  QString dict_file_path = "data/words_murrab_weight_unique.txt";
+
+  QFile file_read(dict_file_path);
 
   if (!file_read.open(QIODevice::ReadOnly | QIODevice::Text))
     {
@@ -33,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
       return;
     }
 
-  text_stream.setDevice(&file_read);
+  QTextStream text_stream(&file_read);
 
   dict_cache.reserve(TOTAL_DICT_WORDS * 2);
 
@@ -47,11 +48,11 @@ MainWindow::MainWindow(QWidget *parent) :
       dict_cache.insertMulti(line[1], {line[0], line[1], line[2]}); // With murrab also as a key (User can potentially enter word with symbols also so, without this we would have rejected valid word)
     }
 
+  file_read.close();
 }
 
 MainWindow::~MainWindow()
 {
-  file_read.close();
   delete ui;
 }
 
