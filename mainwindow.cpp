@@ -87,7 +87,7 @@ QVector<QStringList> MainWindow::get_user_input()
 
 QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_entered_line)
 {
- auto start = std::chrono::high_resolution_clock::now();
+  auto start = std::chrono::high_resolution_clock::now();
   QVector<QStringList> words_murrabs_weights(user_entered_line.size());
 
   for (int i = 0; i < user_entered_line.size(); i++)
@@ -141,7 +141,7 @@ void MainWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_
   int size = words_murrab_weight_per_line.size();
 
   if (size <= 0)
-       return;
+    return;
 
   ui->textEdit->insertPlainText(u8"\nتحلیلِ الفاظ: ");
 
@@ -166,7 +166,7 @@ void MainWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_
         }
       else
         {
-           ui->textEdit->insertHtml(u8"<span style='color:red'>'X' </span>");
+          ui->textEdit->insertHtml(u8"<span style='color:red'>'X' </span>");
         }
 
     }
@@ -185,33 +185,73 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
   if(size <= 0)
     return;
 
-  ui->textEdit->insertPlainText(u8"\nافاعیل: ");
+  QVector<QString> accumulated_weights(1); // There will always be one accumulated weight
 
-  QString accumulated_weight;
+  int new_accumulated_weight_size = accumulated_weights.size();
+  int prev_accumulated_weight_size = new_accumulated_weight_size;
 
-  for (int i = 0; i < size; i++)
+  bool found_meter = false;
+
+  for (int i = 0; i < size; i++) // Iterating every word
     {
       if (words_murrab_weight_per_line[i].size() != 3) continue;
 
-      accumulated_weight += words_murrab_weight_per_line[i][2];
+      const QString& individual_word = words_murrab_weight_per_line[i][0];
+      const QString& individual_weight = words_murrab_weight_per_line[i][2];
+
+      QChar last_letter = individual_word.back();
+      QChar last_weight = individual_weight.back();
+
+      for (int j = 0; j < accumulated_weights.size(); j++)
+        {
+          accumulated_weights[j] += individual_weight;
+        }
+
+      if (individual_word.size() > 1 && last_weight != L'1' && (last_letter == L'ا' || last_letter == L'ہ' ||
+                                                                last_letter == L'ی' || last_letter == L'ے' ||
+                                                                last_letter == L'و'))
+        {
+          for (int k = 0; k < prev_accumulated_weight_size; k++)
+            {
+              QString new_accumulated_weight = accumulated_weights[k];
+              new_accumulated_weight.chop(1);
+
+              accumulated_weights.push_back(new_accumulated_weight);
+              new_accumulated_weight_size++;
+            }
+
+        }
+
+      prev_accumulated_weight_size = new_accumulated_weight_size;
     }
 
-    auto meters_find_iterator = Meter_map.find(accumulated_weight.toStdWString());
+  ui->textEdit->insertPlainText(u8"\nافاعیل: ");
 
-    if (meters_find_iterator != Meter_map.end())
-      {
-        const QString meter_value = QString::fromStdWString(meters_find_iterator->second);
+  for (int i = 0; i < accumulated_weights.size(); i++)
+    {
 
-        ui->textEdit->insertPlainText(meter_value + " (" + accumulated_weight + ")");
-      }
-    else
-      {
-       ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی مانوس بحر نہیں مل سکی </span> (" + accumulated_weight + ")");
-      }
+      auto meters_find_iterator = Meter_map.find(accumulated_weights[i].toStdWString());
 
-    std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
+      if (meters_find_iterator != Meter_map.end())
+        {
+          const QString meter_value = QString::fromStdWString(meters_find_iterator->second);
 
-    QTextStream(stdout) << "Displaying Meters: " << end.count() << "\n";
+          ui->textEdit->insertPlainText(meter_value + " (" + accumulated_weights[i] + ")");
+
+          found_meter = true;
+          break;
+        }
+
+    }
+
+  if (!found_meter)
+    {
+      ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی مانوس بحر نہیں مل سکی </span> (" ")");
+    }
+
+  std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
+
+  QTextStream(stdout) << "Displaying Meters: " << end.count() << "\n";
 }
 
 void MainWindow::display_names(const QVector<QStringList>& words_murrab_weight_per_line)
@@ -232,21 +272,21 @@ void MainWindow::display_names(const QVector<QStringList>& words_murrab_weight_p
       accumulated_weight += words_murrab_weight_per_line[i][2];
     }
 
-    auto meters_find_iterator = Names_map.find(accumulated_weight.toStdWString());
+  auto meters_find_iterator = Names_map.find(accumulated_weight.toStdWString());
 
-    if (meters_find_iterator != Names_map.end())
-      {
-        const QString name_value = QString::fromStdWString(meters_find_iterator->second);
+  if (meters_find_iterator != Names_map.end())
+    {
+      const QString name_value = QString::fromStdWString(meters_find_iterator->second);
 
-        ui->textEdit->insertPlainText(name_value);
-      }    else
-      {
-       ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی بحر نہیں مل سکی </span>");
-      }
+      ui->textEdit->insertPlainText(name_value);
+    }    else
+    {
+      ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی بحر نہیں مل سکی </span>");
+    }
 
-    std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
+  std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
 
-    QTextStream(stdout) << "Displaying Names: " << end.count() << "\n";
+  QTextStream(stdout) << "Displaying Names: " << end.count() << "\n";
 }
 
 void MainWindow::on_pushButton_clicked()
