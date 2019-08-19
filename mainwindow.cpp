@@ -292,7 +292,7 @@ void MainWindow::display_names(const QVector<QStringList>& words_murrab_weight_p
         ui->textEdit->insertPlainText(name_value);
       }    else
       {
-       ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی بحر نہیں مل سکی </span> (" + accumulated_weight + ")");
+       ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی بحر نہیں مل سکی </span>");
       }
 }
 
