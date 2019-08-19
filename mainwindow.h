@@ -7,9 +7,8 @@
 #include <QFile>
 #include <QTextStream>
 #include <QVector>
-
-#include <map>
-#include <unordered_set>
+#include <QHash>
+#include <QSet>
 
 namespace Ui {
 class MainWindow;
@@ -30,8 +29,9 @@ private:
     Ui::MainWindow *ui;
     QShortcut* push_button_shortcut;
 
-    std::map<QString, QStringList> found_cache;
-    std::unordered_set<std::wstring> rejected_cache;
+    QHash<QString, QStringList> dict_cache;
+    QHash<QString, QStringList> found_cache;
+    QSet<QString> rejected_cache;
 
     QFile file_read;
     QTextStream text_stream;
