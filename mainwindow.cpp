@@ -124,13 +124,13 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
           word = word.chopped(2);
         }
 
-       bool found_een_on = (last_two_letters== u8"وں" || last_two_letters== u8"یں");
+//       bool found_een_on = (last_two_letters== u8"وں" || last_two_letters== u8"یں");
 
-       if (found_een_on)
-       {
-            word = word.chopped(2);
-            found_zaer = 1;
-       }
+//       if (found_een_on)
+//       {
+//            word = word.chopped(1);
+//            found_zaer = 1;
+//       }
       QChar first_letter = word.front(); // Checking the first letter of current word
 
       auto AllowedFirstLetter_find_iterator =  AllowedFirstLetter_set.find(first_letter.unicode()); // Find first character of user entered word in our letter map and its starting position in dictionary
@@ -139,6 +139,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
           rejected_cache.insert(word);
           continue;
         }
+
 
 
       if (rejected_cache.find(word) != rejected_cache.end())
