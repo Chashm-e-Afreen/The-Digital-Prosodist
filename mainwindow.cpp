@@ -94,11 +94,19 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
     {
       QString word = user_entered_line[i];
 
-      bool found_zaer = ( word.back() == L'ِ' );
+
+      bool found_hamza_e_izafat  = (word.back() == L'ۂ');
 
       // Chop (remove) the zer if we found it at the end of the word
+      if (found_hamza_e_izafat)
+      {
+          word.chop(1);
+          word+= "ہِ";
+      }
+      bool found_zaer = ( word.back() == L'ِ' );
       if (found_zaer)
         word.chop(1);
+
 
       QChar first_letter = word.front(); // Checking the first letter of current word
 
@@ -300,8 +308,7 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
         {
           const QString meter_value = QString::fromStdWString(meters_find_iterator->second);
 
-          ui->textEdit->insertPlainText(meter_value + " ");
-
+          ui->textEdit->insertPlainText(meter_value + " " +"(" + accumulated_weights[i] + ")");
           found_meter = true;
 
           break;
