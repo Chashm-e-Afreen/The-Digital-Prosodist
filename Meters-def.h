@@ -344,7 +344,7 @@ const std::unordered_map<std::wstring, const std::wstring> Arkan_map
     {L"1",  L"فِ"},
 };
 
-const std::unordered_set<wchar_t> LetterToLine_map
+const std::unordered_set<wchar_t> AllowedFirstLetter_set
 {
     L'آ',
     L'ا',
