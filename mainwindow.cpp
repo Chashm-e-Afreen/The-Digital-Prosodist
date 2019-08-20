@@ -96,12 +96,17 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
 
 
       bool found_hamza_e_izafat  = (word.back() == L'ۂ');
-
+      bool found_aey =(word.back()==L'ے' && word[word.size()-2]==L'ئ');
       // Chop (remove) the zer if we found it at the end of the word
       if (found_hamza_e_izafat)
       {
           word.chop(1);
           word+= "ہِ";
+      }
+      if (found_aey)
+      {
+          word.chop(2);
+          word+= "ِ";
       }
       bool found_zaer = ( word.back() == L'ِ' );
       if (found_zaer)
