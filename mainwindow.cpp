@@ -94,7 +94,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
     {
       QString word = user_entered_line[i];
 
-      bool found_zaer = ( word.back() == L'ِ' );
+
       bool found_hamza_e_izafat  = (word.back() == L'ۂ');
 
       // Chop (remove) the zer if we found it at the end of the word
@@ -103,6 +103,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
           word.chop(1);
           word+= "ہِ";
       }
+      bool found_zaer = ( word.back() == L'ِ' );
       if (found_zaer)
         word.chop(1);
 
