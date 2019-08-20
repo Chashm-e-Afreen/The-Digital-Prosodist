@@ -100,6 +100,8 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
           last_two_letters = word.mid(word.size() - 2, 2);
         }
 
+
+
       bool found_hamza_e_izafat  = (word.back() == L'ۂ');
       if (found_hamza_e_izafat)
         {
@@ -121,6 +123,14 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
         {
           word = word.chopped(2);
         }
+
+       bool found_een_on = (last_two_letters== u8"وں" || last_two_letters== u8"یں");
+
+       if (found_een_on)
+       {
+            word = word.chopped(2);
+            found_zaer = 1;
+       }
       QChar first_letter = word.front(); // Checking the first letter of current word
 
       auto AllowedFirstLetter_find_iterator =  AllowedFirstLetter_set.find(first_letter.unicode()); // Find first character of user entered word in our letter map and its starting position in dictionary
@@ -286,6 +296,8 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
                 {
 
                   QString new_accumulated_weight = accumulated_weights[k];
+
+                  new_accumulated_weight[accumulated_weights[k].size() - individual_weight.size() - 1] = '1';
                   new_accumulated_weight.remove(accumulated_weights[k].size() - individual_weight.size(), 1);
 
                   accumulated_weights.push_back(new_accumulated_weight);
@@ -302,6 +314,8 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
               for (int k = 0; k < prev_accumulated_weight_size; k++)
                 {
                   QString new_accumulated_weight = accumulated_weights[k];
+
+                  new_accumulated_weight[accumulated_weights[k].size() - individual_weight.size() - 1] = '1';
                   new_accumulated_weight[accumulated_weights[k].size() - individual_weight.size() + 1] = '0';
                   new_accumulated_weight.remove(accumulated_weights[k].size() - individual_weight.size(), 1);
 
@@ -449,40 +463,6 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
   QTextStream(stdout) << "Displaying Names: " << end.count() << "\n";
 }
 
-//void MainWindow::display_names(const QVector<QStringList>& words_murrab_weight_per_line)
-//{ auto start = std::chrono::high_resolution_clock::now();
-//  int size = words_murrab_weight_per_line.size();
-
-//  if(size <= 0)
-//    return;
-
-//  ui->textEdit->insertPlainText(u8"\nبحر: ");
-
-//  QString accumulated_weight;
-
-//  for (int i = 0; i < size; i++)
-//    {
-//      if (words_murrab_weight_per_line[i].size() != 3) continue;
-
-//      accumulated_weight += words_murrab_weight_per_line[i][2];
-//    }
-
-//  auto meters_find_iterator = Names_map.find(accumulated_weight.toStdWString());
-
-//  if (meters_find_iterator != Names_map.end())
-//    {
-//      const QString name_value = QString::fromStdWString(meters_find_iterator->second);
-
-//      ui->textEdit->insertPlainText(name_value);
-//    }    else
-//    {
-//      ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی بحر نہیں مل سکی </span>");
-//    }
-
-//  std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
-
-//  QTextStream(stdout) << "Displaying Names: " << end.count() << "\n";
-//}
 
 void MainWindow::on_pushButton_clicked()
 {
