@@ -3,3 +3,11 @@
 3. The conditions with ? and ? don't seem to be working, must look for a fix.
 4. For words such as زمانے and دیے, the program should should be able to replace the ے with a ا and a ہ 
 and then search the word in the dictionary.
+5. The program should be able to deal with words that end with وں and یں endings e.g. کتابوں، غزلوں ، نظمیں
+etc. 
+If ends with یں or وں
+	weight.back() = 1
+	weight2 = weight + "0";
+else ends with یں or وں and preceeding letter is ا or و
+	weight = weight + "1";
+	weight2 = weight + "10"

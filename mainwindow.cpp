@@ -322,10 +322,13 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
       QString individual_word = words_murrab_weight_per_line[i][0];
       QString last_two_letters = individual_word;
-
+      QString last_three_letters = individual_word;
       if (individual_word.size() > 1)
+      {
         last_two_letters = individual_word.mid(individual_word.size() - 2, 2);
+        last_three_letters = individual_word.mid(individual_word.size() - 3, 3);
 
+      }
       QString individual_weight = words_murrab_weight_per_line[i][2];
 
       QChar last_letter = individual_word.back();
@@ -408,9 +411,18 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
             {
               QString new_accumulated_weight_one = accumulated_weights[k] + u8"10";
               QString new_accumulated_weight_two = accumulated_weights[k] + u8"1";
-
+              QString new_accumulated_weight_three = "";
+                if(last_three_letters== u8"وئے")
+                {
+                    new_accumulated_weight_three = accumulated_weights[k];
+                        new_accumulated_weight_three.chop(1);
+                        new_accumulated_weight_three+= u8"1";
+                    accumulated_weights.push_back(new_accumulated_weight_three);
+                    ++new_accumulated_weight_size;
+                }
               accumulated_weights.push_back(new_accumulated_weight_one);
               accumulated_weights.push_back(new_accumulated_weight_two);
+
             }
 
           for (int k = 0; k < prev_accumulated_weight_size; k++)
@@ -418,7 +430,7 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
               accumulated_weights.pop_front();
             }
 
-          new_accumulated_weight_size *= 2;
+          new_accumulated_weight_size += 2;
         }
 
       else if(last_letter == L'ِ' || last_letter == L'ۂ')
