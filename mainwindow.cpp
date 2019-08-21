@@ -334,8 +334,8 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
         {
           for (int k = 0; k < prev_accumulated_weight_size; k++)
             {
-              QString new_accumulated_weight_one = accumulated_weights[k] + u8"1";
-              QString new_accumulated_weight_two = accumulated_weights[k] + u8"10";
+              QString new_accumulated_weight_one = accumulated_weights[k] + u8"10";
+              QString new_accumulated_weight_two = accumulated_weights[k] + u8"1";
 
               accumulated_weights.push_back(new_accumulated_weight_one);
               accumulated_weights.push_back(new_accumulated_weight_two);
@@ -477,6 +477,8 @@ void MainWindow::on_pushButton_clicked()
   foreach (const QStringList line, user_entered_lines)
     {
       words_murrabs_weights_per_line = get_murrab_weight(line);
+//      if (words_murrabs_weights_per_line.back().back()=='1')
+//            words_murrabs_weights_per_line.back().pop_back();
 
       display_meters(words_murrabs_weights_per_line);
       display_arkans(words_murrabs_weights_per_line);
