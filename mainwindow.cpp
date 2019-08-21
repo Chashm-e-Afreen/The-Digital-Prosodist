@@ -498,7 +498,7 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
         }
 
-      else if (individual_word == u8"و" || individual_word == u8"یں" || individual_word == u8"وں")
+      else if (individual_word == u8"و")
         {
           for (int k = 0; k < prev_accumulated_weight_size; k++)
             {
