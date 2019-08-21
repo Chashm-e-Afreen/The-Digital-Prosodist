@@ -548,8 +548,8 @@ void MainWindow::on_pushButton_clicked()
   foreach (const QStringList line, user_entered_lines)
     {
       words_murrabs_weights_per_line = get_murrab_weight(line);
-//      if (words_murrabs_weights_per_line.back().back()=='1')
-//            words_murrabs_weights_per_line.back().pop_back();
+      if (words_murrabs_weights_per_line.back().back().back()=='1')
+            words_murrabs_weights_per_line.back().back().chop(1);
 
       display_meters(words_murrabs_weights_per_line);
       display_arkans(words_murrabs_weights_per_line);
