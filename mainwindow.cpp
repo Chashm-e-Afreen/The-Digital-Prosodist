@@ -102,7 +102,9 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
         }
 
       bool found_hamza_e_izafat  = (word.back() == L'ۂ');
-      
+
+
+
       if (found_hamza_e_izafat)
         {
           word.chop(1);
