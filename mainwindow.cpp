@@ -9,7 +9,7 @@
 #include <QMessageBox>
 #include <chrono>
 
-#define TOTAL_DICT_WORDS 84474
+#define TOTAL_DICT_WORDS 99455
 
 MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
@@ -100,9 +100,8 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
           last_two_letters = word.mid(word.size() - 2, 2);
         }
 
-
-
       bool found_hamza_e_izafat  = (word.back() == L'ۂ');
+      
       if (found_hamza_e_izafat)
         {
           word.chop(1);
@@ -123,14 +122,6 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
         {
           word = word.chopped(2);
         }
-
-//       bool found_een_on = (last_two_letters== u8"وں" || last_two_letters== u8"یں");
-
-//       if (found_een_on)
-//       {
-//            word = word.chopped(1);
-//            found_zaer = 1;
-//       }
       QChar first_letter = word.front(); // Checking the first letter of current word
 
       auto AllowedFirstLetter_find_iterator =  AllowedFirstLetter_set.find(first_letter.unicode()); // Find first character of user entered word in our letter map and its starting position in dictionary
@@ -233,18 +224,78 @@ void MainWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_
         {
           const QString rukan = QString::fromStdWString(arkaan_find_iterator->second);
 
-          ui->textEdit->insertPlainText(rukan + " ");
+          bool has_multiple_weights = has_different_weights(words_murrab_weight_per_line[i][0]);
+
+          if (has_multiple_weights)
+            {
+              ui->textEdit->insertHtml(u8"<span style='color:cyan'>" + rukan + u8"</span> ");
+            }
+          else
+            {
+              ui->textEdit->insertPlainText(rukan + " ");
+            }
         }
       else
         {
           ui->textEdit->insertHtml(u8"<span style='color:red'>'X' </span>");
         }
-
     }
+
+  //ui->textEdit->setPlainText(ui->textEdit->toHtml());
 
   std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
 
   QTextStream(stdout) << "Displaying Arkans: " << end.count() << "\n";
+}
+
+bool MainWindow::has_different_weights(const QString& word)
+{
+
+  QSet<QString> different_unique_weights;
+
+  auto dict_cache_find_iterator = dict_cache.find(word);
+
+  while (dict_cache_find_iterator != dict_cache.end() && dict_cache_find_iterator.key() == word)
+    {
+      if (dict_cache_find_iterator.value().size() < 3)
+        {
+          dict_cache_find_iterator++;
+          continue;
+        }
+
+      different_unique_weights.insert(dict_cache_find_iterator.value()[2]);
+
+      dict_cache_find_iterator++;
+
+      if (different_unique_weights.size() > 1)
+        return true;
+    }
+
+  return different_unique_weights.size() > 1;
+}
+
+QList<QString> MainWindow::get_different_weights_of_word(const QString& word)
+{
+  QSet<QString> different_unique_weights;
+
+  auto dict_cache_find_iterator = dict_cache.find(word);
+
+  while(dict_cache_find_iterator != dict_cache.end() && dict_cache_find_iterator.key() == word)
+    {
+      if (dict_cache_find_iterator.value().size() < 3)
+        {
+          dict_cache_find_iterator++;
+          continue;
+        }
+
+      QString weight = dict_cache_find_iterator.value()[2];
+
+      different_unique_weights.insert(weight);
+
+      dict_cache_find_iterator++;
+    }
+
+  return different_unique_weights.toList();
 }
 
 QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& words_murrab_weight_per_line)
@@ -268,13 +319,13 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
       if (words_murrab_weight_per_line[i].size() != 3) continue;
 
-      const QString& individual_word = words_murrab_weight_per_line[i][0];
+      QString individual_word = words_murrab_weight_per_line[i][0];
       QString last_two_letters = individual_word;
 
       if (individual_word.size() > 1)
         last_two_letters = individual_word.mid(individual_word.size() - 2, 2);
 
-      const QString& individual_weight = words_murrab_weight_per_line[i][2];
+      QString individual_weight = words_murrab_weight_per_line[i][2];
 
       QChar last_letter = individual_word.back();
       QChar first_letter = individual_word.front();
@@ -284,8 +335,29 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
         {
           if (individual_word == u8"و")
             break;
-
+          
           accumulated_weights[j] += individual_weight;
+        }
+
+      if (has_different_weights(individual_word))
+        {
+          QList<QString> different_weights = get_different_weights_of_word(individual_word);
+
+          accumulated_weights.reserve(accumulated_weights.size() * different_weights.size());
+
+          for (QString weight: different_weights)
+            {
+              if (weight == individual_weight) continue;
+
+              for (int k = 0; k < prev_accumulated_weight_size; k++)
+                {
+                  accumulated_weights.push_back(accumulated_weights[k] + weight);
+
+                  new_accumulated_weight_size++;
+                }
+            }
+
+          prev_accumulated_weight_size = new_accumulated_weight_size;
         }
 
       if (i != 0 && individual_word.size() > 1 && (prev_word_last_letter != L'ا' && prev_word_last_letter != L'ہ' && prev_word_last_letter != L'ۂ' &&
@@ -305,7 +377,6 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
                   new_accumulated_weight_size++;
                 }
-
 
               prev_accumulated_weight_size = new_accumulated_weight_size;
             }
