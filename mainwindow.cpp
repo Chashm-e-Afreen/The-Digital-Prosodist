@@ -228,7 +228,7 @@ void MainWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_
 
           if (has_multiple_weights)
             {
-              ui->textEdit->insertHtml(u8"<span style='color:#ff0066'>" + rukan + u8"</span> ");
+              ui->textEdit->insertHtml(u8"<span style='color:magenta'>" + rukan + u8"</span> ");
             }
           else
             {
