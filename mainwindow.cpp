@@ -9,6 +9,7 @@
 #include <QMessageBox>
 #include <chrono>
 
+#include <QProcess>
 #define TOTAL_DICT_WORDS 99455
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -559,4 +560,10 @@ void MainWindow::on_pushButton_clicked()
   std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
 
   QTextStream(stdout) << "Time elapsed: " << end.count() << "\n ---------------------------- \n";
+}
+
+void MainWindow::on_pushButton_2_clicked()
+{
+    qApp->quit();
+    QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
 }
