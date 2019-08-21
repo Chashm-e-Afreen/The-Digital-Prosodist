@@ -564,6 +564,8 @@ void MainWindow::on_pushButton_clicked()
 
 void MainWindow::on_pushButton_2_clicked()
 {
-    qApp->quit();
-    QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
+//    qApp->quit();
+//    QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
+    ui->textEdit->clear();
+
 }
