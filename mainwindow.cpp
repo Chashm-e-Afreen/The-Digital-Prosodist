@@ -512,7 +512,8 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
                   new_accumulated_weight_size++;
                 }
-              else {
+              else
+                {
                   accumulated_weights[k] += '0';
                   QString new_accumulated_weight1 = accumulated_weights[k] + "10";
                   accumulated_weights.push_back(new_accumulated_weight1);

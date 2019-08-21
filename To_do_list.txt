@@ -1,9 +1,6 @@
-﻿1. Adding the functionality for alif-e-wasl.
-2. Dealing with homophones i.e. words with the same spelling but different weights. 
-3. The conditions with ? and ? don't seem to be working, must look for a fix.
-4. For words such as زمانے and دیے, the program should should be able to replace the ے with a ا and a ہ 
+﻿1. For words such as زمانے and دیے, the program should should be able to replace the ے with a ا and a ہ 
 and then search the word in the dictionary.
-5. The program should be able to deal with words that end with وں and یں endings e.g. کتابوں، غزلوں ، نظمیں
+2. The program should be able to deal with words that end with وں and یں endings e.g. کتابوں، غزلوں ، نظمیں
 etc. 
 If ends with یں or وں
 	weight.back() = 1
@@ -11,4 +8,3 @@ If ends with یں or وں
 else ends with یں or وں and preceeding letter is ا or و
 	weight = weight + "1";
 	weight2 = weight + "10"
-6. The program currently doesn't work for words that can have more than two weights.
