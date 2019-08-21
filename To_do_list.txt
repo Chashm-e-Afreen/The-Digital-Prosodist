@@ -11,3 +11,4 @@ If ends with یں or وں
 else ends with یں or وں and preceeding letter is ا or و
 	weight = weight + "1";
 	weight2 = weight + "10"
+6. The program currently doesn't work for words that can have more than two weights.
