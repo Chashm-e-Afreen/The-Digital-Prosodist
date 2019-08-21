@@ -342,6 +342,7 @@ const std::unordered_map<std::wstring, const std::wstring> Arkan_map
     {L"110110101", L"مَفاعلاتان"},
     {L"11011101",  L"مفاعِلَتان"},
     {L"1",  L"فِ"},
+    {L"11",  L"فِعِ"},
 };
 
 const std::unordered_set<wchar_t> AllowedFirstLetter_set
