@@ -495,8 +495,12 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
 
   ui->textEdit->insertPlainText(u8"\nافاعیل: ");
   int index = 0;
+
   for (int i = 0; i < accumulated_weights.size(); i++)
     {
+
+        if(accumulated_weights[i].back()=='1')
+            accumulated_weights[i].chop(1);
 
       auto meters_find_iterator = Meter_map.find(accumulated_weights[i].toStdWString());
       index = i;
@@ -549,8 +553,8 @@ void MainWindow::on_pushButton_clicked()
   foreach (const QStringList line, user_entered_lines)
     {
       words_murrabs_weights_per_line = get_murrab_weight(line);
-      if (words_murrabs_weights_per_line.back().back().back()=='1')
-            words_murrabs_weights_per_line.back().back().chop(1);
+//      if (words_murrabs_weights_per_line.back().back().back()=='1' && words_murrabs_weights_per_line.size()>1)
+//            words_murrabs_weights_per_line.back().back().chop(1);
 
       display_meters(words_murrabs_weights_per_line);
       display_arkans(words_murrabs_weights_per_line);
