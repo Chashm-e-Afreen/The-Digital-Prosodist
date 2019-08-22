@@ -74,7 +74,7 @@ QVector<QStringList> MainWindow::get_user_input()
 
   for(int i = 0; i < total_lines; i++)
     {
-      QStringList individual_words = user_entered_individual_lines[i].split(" ", QString::SkipEmptyParts);
+      QStringList individual_words = user_entered_individual_lines[i].split(QRegExp("\\s+"), QString::SkipEmptyParts);
 
       user_input[i] = individual_words;
     }
@@ -124,12 +124,15 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
           word = word.chopped(2);
         }
       
+      bool found_noon_ghunna = (word.back() == L'ں');
+
+      bool found_oun = (last_two_letters == u8"وں");
+
       bool found_oun_yen = (last_two_letters == u8"یں" || last_two_letters == u8"وں");
       
       bool found_bariye = (word.back() == L'ے' && last_two_letters != u8"ئے");
 
-      bool found_noon_ghunna = (word.back() == L'ں');
-      
+
       QChar first_letter = word.front(); // Checking the first letter of current word
 
       auto AllowedFirstLetter_find_iterator =  AllowedFirstLetter_set.find(first_letter.unicode()); // Find first character of user entered word in our letter map and its starting position in dictionary
@@ -203,8 +206,9 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
 
                   found_cache.insert(user_entered_line[i], words_murrabs_weights[i]);
                 }
-              else
+              else if (found_oun_yen)
                 {
+
                   word.chop(2);
 
                   dict_cache_find_iterator = dict_cache.find(word);
@@ -216,20 +220,35 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
 
                       found_cache.insert(user_entered_line[i], words_murrabs_weights[i]);
                     }
+                }
 
-                  else
-                    {
-                      rejected_cache.insert(word);
-                    }
+              else
+                {
+                  rejected_cache.insert(word);
                 }
             }
+        }
 
-          else if (found_bariye)
+      else if (found_bariye)
+        {
+          word.back() = L'ا';
+
+          dict_cache_find_iterator = dict_cache.find(word);
+
+          if (dict_cache_find_iterator != dict_cache.end())
             {
-              word.back() = L'ا';
-              
+              words_murrabs_weights[i] = dict_cache_find_iterator.value();
+              words_murrabs_weights[i][0] = user_entered_line[i];
+
+              found_cache.insert(user_entered_line[i], words_murrabs_weights[i]);
+            }
+
+          else
+            {
+              word.back() = L'ہ';
+
               dict_cache_find_iterator = dict_cache.find(word);
-              
+
               if (dict_cache_find_iterator != dict_cache.end())
                 {
                   words_murrabs_weights[i] = dict_cache_find_iterator.value();
@@ -240,37 +259,23 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
 
               else
                 {
-                  word.back() = L'ہ';
-
-                  dict_cache_find_iterator = dict_cache.find(word);
-
-                  if (dict_cache_find_iterator != dict_cache.end())
-                    {
-                      words_murrabs_weights[i] = dict_cache_find_iterator.value();
-                      words_murrabs_weights[i][0] = user_entered_line[i];
-
-                      found_cache.insert(user_entered_line[i], words_murrabs_weights[i]);
-                    }
-
-                  else
-                    {
-                      rejected_cache.insert(word);
-                    }
+                  rejected_cache.insert(word);
                 }
             }
+        }
 
-          else
-            {
-              rejected_cache.insert(word);
-            }
+      else
+        {
+          rejected_cache.insert(word);
         }
     }
+}
 
-  std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
+std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
 
-  QTextStream(stdout) << "Fetching Weights: " << end.count() << "\n";
+QTextStream(stdout) << "Fetching Weights: " << end.count() << "\n";
 
-  return words_murrabs_weights;
+return words_murrabs_weights;
 }
 
 void MainWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_per_line)
