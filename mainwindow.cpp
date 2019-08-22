@@ -146,7 +146,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
       if (found_cache_find_iterator != found_cache.end())
         {
           words_murrabs_weights[i] = found_cache_find_iterator.value();
-          if (found_zaer || found_ea || found_hamza_e_izafat || found_oun_yen || found_bariye)
+          if (found_zaer || found_ea || found_hamza_e_izafat || found_oun_yen || found_bariye || found_noon_ghunna)
             {
               words_murrabs_weights[i][0] = user_entered_line[i];
             }
@@ -552,7 +552,7 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
         }
 
-      else if (individual_word == u8"و" /*|| last_two_letters  == u8"یں" || last_two_letters == u8"وں"*/)
+      else if (individual_word.size()> 3 && individual_word == u8"و" /*|| last_two_letters  == u8"یں" || last_two_letters == u8"وں"*/)
         {
           for (int k = 0; k < prev_accumulated_weight_size; k++)
             {
