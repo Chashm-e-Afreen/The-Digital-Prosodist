@@ -117,7 +117,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
           word.chop(1);
         }
 
-      bool found_ea = (word.size() > 3 && last_two_letters == u8"ئے" && word != u8"ہوئے");
+      bool found_ea = (word.size() > 3 && last_two_letters == u8"ئے" && word != u8"ہوئے" );
 
       if (found_ea)
         {
@@ -127,7 +127,9 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
       bool found_oun_yen = (last_two_letters == u8"یں" || last_two_letters == u8"وں");
       
       bool found_bariye = (word.back() == L'ے' && last_two_letters != u8"ئے");
-
+     
+      bool found_noon_ghunna = (word.back() == L'ں');
+      
       QChar first_letter = word.front(); // Checking the first letter of current word
 
       auto AllowedFirstLetter_find_iterator =  AllowedFirstLetter_set.find(first_letter.unicode()); // Find first character of user entered word in our letter map and its starting position in dictionary
@@ -146,7 +148,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
       if (found_cache_find_iterator != found_cache.end())
         {
           words_murrabs_weights[i] = found_cache_find_iterator.value();
-          if (found_zaer || found_ea || found_hamza_e_izafat || found_oun_yen || found_bariye)
+          if (found_zaer || found_ea || found_hamza_e_izafat || found_oun_yen || found_bariye || found_noon_ghunna)
             {
               words_murrabs_weights[i][0] = user_entered_line[i];
             }
@@ -267,7 +269,7 @@ void MainWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_
     {
       if (words_murrab_weight_per_line[i].size() != 3)
         {
-          ui->textEdit->insertHtml(u8"'<span style='color:red'>X</span>' ");
+         // ui->textEdit->insertHtml(u8"'<span style='color:red'>X</span>' ");
           continue;
         }
 
@@ -382,7 +384,7 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
         {
           last_two_letters = individual_word.mid(individual_word.size() - 2, 2);
         }
-      if (individual_word.size() > 2)
+       if (individual_word.size() > 2)
         {
           last_three_letters = individual_word.mid(individual_word.size() - 3, 3);
         }
@@ -488,7 +490,7 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
         }
 
 
-      if (last_two_letters == u8"ئے" && individual_word != u8"ہوئے")
+      if (individual_word.size()>3 && last_two_letters == u8"ئے" && individual_word != u8"ہوئے")
         {
           for (int k = 0; k < prev_accumulated_weight_size; k++)
             {
@@ -552,7 +554,7 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
         }
 
-      else if (individual_word == u8"و" /*|| last_two_letters  == u8"یں" || last_two_letters == u8"وں"*/)
+      else if (individual_word.size()> 3 && (individual_word == u8"و" || last_two_letters  == u8"یں" || last_two_letters == u8"وں"))
         {
           for (int k = 0; k < prev_accumulated_weight_size; k++)
             {
