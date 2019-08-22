@@ -552,7 +552,7 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
         }
 
-      else if (individual_word.size()> 3 && individual_word == u8"و" /*|| last_two_letters  == u8"یں" || last_two_letters == u8"وں"*/)
+      else if (individual_word.size()> 3 && (individual_word == u8"و" || last_two_letters  == u8"یں" || last_two_letters == u8"وں"))
         {
           for (int k = 0; k < prev_accumulated_weight_size; k++)
             {
