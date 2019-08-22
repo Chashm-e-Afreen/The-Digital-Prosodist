@@ -8,3 +8,5 @@ If ends with یں or وں
 else ends with یں or وں and preceeding letter is ا or و
 	weight = weight + "1";
 	weight2 = weight + "10"
+3. Dealing with words like تصویرو by removing the vao and searching and eventually adding a 0 to the weight of the fetched word. 
+    If the original isn't found of course. 
