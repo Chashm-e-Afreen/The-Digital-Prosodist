@@ -5,7 +5,6 @@
 #include <QShortcut>
 #include <QVector>
 #include <QHash>
-#include <QSet>
 
 namespace Ui {
 class MainWindow;
@@ -29,8 +28,6 @@ private:
     QShortcut* push_button_shortcut;
 
     QHash<QString, QStringList> dict_cache;
-    QHash<QString, QStringList> found_cache;
-    QSet<QString> rejected_cache;
 
     QVector<QStringList> get_user_input();
     QVector<QStringList> get_murrab_weight(const QStringList& user_entered_line);
