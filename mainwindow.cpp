@@ -586,6 +586,7 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
               accumulated_weights.push_back(new_accumulated_weight);
 
               new_accumulated_weight_size++;
+
               //                }
               //              else
               //                {
