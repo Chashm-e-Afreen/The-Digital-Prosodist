@@ -639,7 +639,7 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
             }
         }
 
-      else if (individual_word.size() > 1 && last_weight != L'1' && (last_letter == L'ا' || last_letter == L'ہ' ||
+      else if (individual_word.size() > 1 && individual_word!= "اے" && last_weight != L'1' && (last_letter == L'ا' || last_letter == L'ہ' ||
                                                                      last_letter == L'ی' || last_letter == L'ے' ||
                                                                      last_letter == L'و' || last_letter == L'ؤ'))
         {
