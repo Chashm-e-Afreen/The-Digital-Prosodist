@@ -77,7 +77,7 @@ QVector<QStringList> MainWindow::get_user_input()
 
   for(int i = 0; i < total_lines; i++)
     {
-      QStringList individual_words = user_entered_individual_lines[i].split(QRegExp("\\s+"), QString::SkipEmptyParts);
+      QStringList individual_words = user_entered_individual_lines[i].split(QRegExp(u8"[\\s+،,\"]"), QString::SkipEmptyParts);
 
       user_input[i] = individual_words;
     }
@@ -146,9 +146,13 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
 
       bool found_aan = (word.size() > 3 && last_two_letters == u8"اں");
 
+      bool found_oun_hamzawao = (word.size() > 2 && last_two_letters == u8"ؤں");
+
       bool found_gan = (word.size() > 4 && last_three_letters == u8"گان");
 
       bool found_gaan = (word.size() > 4 && last_three_letters == u8"گاں");
+
+      bool found_hamza_yen = (word.size() > 4 && last_three_letters == u8"ئیں");
 
       QChar first_letter = word.front(); // Checking the first letter of current word
 
@@ -222,6 +226,19 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
                       words_murrabs_weights[i][0] = user_entered_line[i];
                     }
                 }
+
+                else if (found_hamza_yen)
+                {
+                  word.chop(1); // We already chopped two letters for normal 'yen' check
+
+                  dict_cache_find_iterator = dict_cache.find(word);
+
+                  if (dict_cache_find_iterator != dict_cache.end())
+                    {
+                      words_murrabs_weights[i] = dict_cache_find_iterator.value();
+                      words_murrabs_weights[i][0] = user_entered_line[i];
+                    }
+                }
             }
 
           else if (found_aan)
@@ -261,6 +278,20 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
                     }
                 }
             }
+
+          else if (found_oun_hamzawao)
+          {
+            word.chop(2);
+
+            dict_cache_find_iterator = dict_cache.find(word);
+
+            if (dict_cache_find_iterator != dict_cache.end())
+              {
+                words_murrabs_weights[i] = dict_cache_find_iterator.value();
+
+                words_murrabs_weights[i][0] = user_entered_line[i];
+              }
+          }
 
         }
 
@@ -346,8 +377,6 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
                 }
             }
         }
-
-
     }
 
   std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
@@ -639,10 +668,9 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
             }
         }
 
-      else if (individual_word.size() > 1 && individual_word!= "اے" && last_weight != L'1' && (last_letter == L'ا' || last_letter == L'ہ' ||
-                                                                     last_letter == L'ی' || last_letter == L'ے' ||
-                                                                     last_letter == L'و' || last_letter == L'ؤ'))
-        {
+      else if (individual_word.size() > 1 && individual_word != u8"اے" && last_weight != L'1' && (last_letter == L'ا' || last_letter == L'ہ' ||
+                                                                                               last_letter == L'ی' || last_letter == L'ے' ||
+                                                                                               last_letter == L'و' || last_letter == L'ؤ')){
           for (int k = 0; k < prev_accumulated_weight_size; k++)
             {
               QString new_accumulated_weight = accumulated_weights[k];
@@ -655,29 +683,51 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
         }
 
-      else if (individual_word == u8"و" || (individual_word.size() > 3 && (last_two_letters  == u8"یں" || last_two_letters == u8"وں") && dict_cache.find(individual_word) == dict_cache.end()))
-        {
+      else if (individual_word == u8"و" || (individual_word.size() > 3 && ((last_two_letters  == u8"یں" && last_three_letters != u8"ئیں")|| last_two_letters == u8"وں") && dict_cache.find(individual_word) == dict_cache.end()))
+          {
           for (int k = 0; k < prev_accumulated_weight_size; k++)
             {
-              //              if(accumulated_weights[k].back() != L'ا' && accumulated_weights[k].back() != L'و')
-              //                {
-              accumulated_weights[k].back() = '1';
+//              if(accumulated_weights[k].back() != L'ا' && accumulated_weights[k].back() != L'و')
+//                {
+                    accumulated_weights[k].back() = '1';
 
-              QString new_accumulated_weight = accumulated_weights[k] + '0';
+                  QString new_accumulated_weight = accumulated_weights[k] + '0';
 
-              accumulated_weights.push_back(new_accumulated_weight);
+                  accumulated_weights.push_back(new_accumulated_weight);
 
-              new_accumulated_weight_size++;
+                  new_accumulated_weight_size++;
+                }
+//              else
+//                 {
+//                  accumulated_weights[k] += '0';
+//                  QString new_accumulated_weight1 = accumulated_weights[k] + "10";
+//                  accumulated_weights.push_back(new_accumulated_weight1);
 
-              //                }
-              //              else
-              //                {
-              //                  accumulated_weights[k] += '0';
-              //                  QString new_accumulated_weight1 = accumulated_weights[k] + "10";
-              //                  accumulated_weights.push_back(new_accumulated_weight1);
-              //                  ++new_accumulated_weight_size;
-              //                }
-            }
+//                  new_accumulated_weight_size++;
+//                }
+//            }
+        }
+
+      else if (((individual_word.size() > 3 && last_two_letters == u8"ؤں")
+           || (individual_word.size() > 4 && last_three_letters == u8"ئیں"))
+           && (dict_cache.find(individual_word) == dict_cache.end()))
+        {
+
+          QString chopped_individual_word = individual_word.chopped((last_two_letters == u8"ؤں") ? 2:3 );
+
+            if (chopped_individual_word.back() == L'ا')
+              {
+                for (int k = 0; k < prev_accumulated_weight_size; k++)
+                  {
+                    accumulated_weights[k] += L'1';
+
+                    QString new_accumulated_weight = accumulated_weights[k] + L'0';
+
+                    accumulated_weights.push_back(new_accumulated_weight);
+
+                    new_accumulated_weight_size++;
+                  }
+              }
         }
 
       prev_accumulated_weight_size = new_accumulated_weight_size;
