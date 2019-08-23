@@ -133,6 +133,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
       
       bool found_bariye = (word.back() == L'ے' && last_two_letters != u8"ئے");
 
+      bool found_wao = (word.back() == L'و');
 
       QChar first_letter = word.front(); // Checking the first letter of current word
 
@@ -236,6 +237,29 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
                   words_murrabs_weights[i][0] = user_entered_line[i];
                 }
             }
+        }
+
+      else if (found_wao)
+        {
+          word.chop(1);
+          dict_cache_find_iterator = dict_cache.find(word);
+
+          if (dict_cache_find_iterator != dict_cache.end())
+            {
+              words_murrabs_weights[i] = dict_cache_find_iterator.value();
+
+              if (words_murrabs_weights[i][2].back() == L'0')
+                {
+                  words_murrabs_weights[i][2] += L'1';
+                }
+              else
+                {
+                  words_murrabs_weights[i][2] += L'0';
+                }
+
+              words_murrabs_weights[i][0] = user_entered_line[i];
+            }
+
         }
     }
 
