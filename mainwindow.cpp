@@ -8,9 +8,11 @@
 #include <QTextStream>
 #include <QMessageBox>
 #include <QSet>
+
 #include <chrono>
 
 #include <QProcess>
+
 #define TOTAL_DICT_WORDS 99421
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -96,10 +98,15 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
     {
       QString word = user_entered_line[i];
       QString last_two_letters = word;
+      QString last_three_letters = word;
 
-      if (word.size() > 2)
+      if (word.size() > 1)
         {
           last_two_letters = word.mid(word.size() - 2, 2);
+        }
+      if (word.size() > 2)
+        {
+          last_three_letters = word.mid(word.size() - 3, 3);
         }
 
       bool found_hamza_e_izafat  = (word.back() == L'ۂ');
@@ -135,6 +142,14 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
 
       bool found_wao = (word.back() == L'و');
 
+      bool found_an = (word.size() > 3 && last_two_letters == u8"ان");
+
+      bool found_aan = (word.size() > 3 && last_two_letters == u8"اں");
+
+      bool found_gan = (word.size() > 4 && last_three_letters == u8"گان");
+
+      bool found_gaan = (word.size() > 4 && last_three_letters == u8"گاں");
+
       QChar first_letter = word.front(); // Checking the first letter of current word
 
       auto AllowedFirstLetter_find_iterator =  AllowedFirstLetter_set.find(first_letter.unicode()); // Find first character of user entered word in our letter map and its starting position in dictionary
@@ -159,7 +174,6 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
 
       else if (found_ea)
         {
-
 
           word += u8"ئے";
 
@@ -186,7 +200,6 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
 
           else if (found_oun_yen) // we didn't find word after replacing nun-ghuna with nun so, seeing if the word possibly end on oun and yen and checking for word in dict after chopping these letters from user entered word
             {
-
               word.chop(2);
 
               dict_cache_find_iterator = dict_cache.find(word);
@@ -210,6 +223,45 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
                     }
                 }
             }
+
+          else if (found_aan)
+            {
+              word.chop(2);
+
+              dict_cache_find_iterator = dict_cache.find(word);
+
+              if (dict_cache_find_iterator != dict_cache.end())
+                {
+                  words_murrabs_weights[i] = dict_cache_find_iterator.value();
+
+                  words_murrabs_weights[i][2].back() = L'1';
+
+                  words_murrabs_weights[i][2] += L'0';
+
+                  words_murrabs_weights[i][0] = user_entered_line[i];
+                }
+
+              else if (found_gaan)
+                {
+                  word.back() = L'ہ';
+
+                  dict_cache_find_iterator = dict_cache.find(word);
+
+                  if (dict_cache_find_iterator != dict_cache.end())
+                    {
+                      words_murrabs_weights[i] = dict_cache_find_iterator.value();
+
+                      words_murrabs_weights[i][2].chop(1);
+
+                      words_murrabs_weights[i][2].back() = L'1';
+
+                      words_murrabs_weights[i][2] += u8"10";
+
+                      words_murrabs_weights[i][0] = user_entered_line[i];
+                    }
+                }
+            }
+
         }
 
       else if (found_bariye)
@@ -242,25 +294,60 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
       else if (found_wao)
         {
           word.chop(1);
+
           dict_cache_find_iterator = dict_cache.find(word);
 
           if (dict_cache_find_iterator != dict_cache.end())
             {
               words_murrabs_weights[i] = dict_cache_find_iterator.value();
 
-              if (words_murrabs_weights[i][2].back() == L'0')
-                {
-                  words_murrabs_weights[i][2] += L'1';
-                }
-              else
-                {
-                  words_murrabs_weights[i][2] += L'0';
-                }
+              words_murrabs_weights[i][2].back() = L'1';
+
+              words_murrabs_weights[i][2] += L'0';
+
+              words_murrabs_weights[i][0] = user_entered_line[i];
+            }
+        }
+
+      else if (found_an)
+        {
+          word.chop(2);
+
+          dict_cache_find_iterator = dict_cache.find(word);
+
+          if (dict_cache_find_iterator != dict_cache.end())
+            {
+              words_murrabs_weights[i] = dict_cache_find_iterator.value();
+
+              words_murrabs_weights[i][2].back() = L'1';
+
+              words_murrabs_weights[i][2] += u8"01";
 
               words_murrabs_weights[i][0] = user_entered_line[i];
             }
 
+          else if (found_gan)
+            {
+              word.back() = L'ہ';
+
+              dict_cache_find_iterator = dict_cache.find(word);
+
+              if (dict_cache_find_iterator != dict_cache.end())
+                {
+                  words_murrabs_weights[i] = dict_cache_find_iterator.value();
+
+                  words_murrabs_weights[i][2].chop(1);
+
+                  words_murrabs_weights[i][2].back() = L'1';
+
+                  words_murrabs_weights[i][2] += u8"101";
+
+                  words_murrabs_weights[i][0] = user_entered_line[i];
+                }
+            }
         }
+
+
     }
 
   std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
@@ -313,8 +400,6 @@ void MainWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_
           ui->textEdit->insertHtml(u8"<span style='color:red'>'X' </span>");
         }
     }
-
-  //ui->textEdit->setPlainText(ui->textEdit->toHtml());
 
   std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
 
@@ -528,11 +613,11 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
               new_accumulated_weight_size += 2;
             }
 
-//                    for (int k = 0; k < prev_accumulated_weight_size; k++)
-//                      {
-//                        accumulated_weights.pop_front();
-//                        new_accumulated_weight_size--;
-//                      }
+          //                    for (int k = 0; k < prev_accumulated_weight_size; k++)
+          //                      {
+          //                        accumulated_weights.pop_front();
+          //                        new_accumulated_weight_size--;
+          //                      }
         }
 
       else if(last_letter == L'ِ' || last_letter == L'ۂ')
