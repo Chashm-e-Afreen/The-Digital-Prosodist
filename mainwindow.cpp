@@ -7,6 +7,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QMessageBox>
+#include <QSet>
 #include <chrono>
 
 #include <QProcess>
@@ -74,7 +75,7 @@ QVector<QStringList> MainWindow::get_user_input()
 
   for(int i = 0; i < total_lines; i++)
     {
-      QStringList individual_words = user_entered_individual_lines[i].split(" ", QString::SkipEmptyParts);
+      QStringList individual_words = user_entered_individual_lines[i].split(QRegExp("\\s+"), QString::SkipEmptyParts);
 
       user_input[i] = individual_words;
     }
@@ -124,38 +125,27 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
           word = word.chopped(2);
         }
       
+      bool found_noon_ghunna = (word.back() == L'ں');
+
+      bool found_oun = (last_two_letters == u8"وں");
+
       bool found_oun_yen = (last_two_letters == u8"یں" || last_two_letters == u8"وں");
       
       bool found_bariye = (word.back() == L'ے' && last_two_letters != u8"ئے");
 
-      bool found_noon_ghunna = (word.back() == L'ں');
-      
+      bool found_wao = (word.back() == L'و');
+
       QChar first_letter = word.front(); // Checking the first letter of current word
 
       auto AllowedFirstLetter_find_iterator =  AllowedFirstLetter_set.find(first_letter.unicode()); // Find first character of user entered word in our letter map and its starting position in dictionary
+
       if (AllowedFirstLetter_find_iterator == AllowedFirstLetter_set.end()) // We did't find the letter in AllowedFirstLetter_set
         {
-          rejected_cache.insert(word);
-          continue;
-        }
-
-      if (rejected_cache.find(word) != rejected_cache.end())
-        {
-          continue;
-        }
-
-      auto found_cache_find_iterator = found_cache.find(word);
-      if (found_cache_find_iterator != found_cache.end())
-        {
-          words_murrabs_weights[i] = found_cache_find_iterator.value();
-          if (found_zaer || found_ea || found_hamza_e_izafat || found_oun_yen || found_bariye || found_noon_ghunna)
-            {
-              words_murrabs_weights[i][0] = user_entered_line[i];
-            }
           continue;
         }
 
       auto dict_cache_find_iterator = dict_cache.find(word);
+
       if (dict_cache_find_iterator != dict_cache.end())
         {
           words_murrabs_weights[i] = dict_cache_find_iterator.value();
@@ -165,33 +155,39 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
               words_murrabs_weights[i][0] = user_entered_line[i];
             }
 
-          found_cache.insert(user_entered_line[i], dict_cache_find_iterator.value());
-
         }
-      else
+
+      else if (found_ea)
         {
 
-          if (found_ea)
+
+          word += u8"ئے";
+
+          dict_cache_find_iterator = dict_cache.find(word);
+
+          if (dict_cache_find_iterator != dict_cache.end())
             {
-              word += u8"ئے";
-
-              dict_cache_find_iterator = dict_cache.find(word);
-
-              if (dict_cache_find_iterator != dict_cache.end())
-                {
-                  words_murrabs_weights[i] = dict_cache_find_iterator.value();
-
-                  found_cache.insert(user_entered_line[i], dict_cache_find_iterator.value());
-                }
-              else
-                {
-                  rejected_cache.insert(word);
-                }
-
+              words_murrabs_weights[i] = dict_cache_find_iterator.value();
             }
-          else if (found_noon_ghunna)
+        }
+
+      else if (found_noon_ghunna) // found non ghunna at the end of the word
+        {
+          word.back() = L'ن';
+
+          dict_cache_find_iterator = dict_cache.find(word);
+
+          if (dict_cache_find_iterator != dict_cache.end())
             {
-              word.back() = L'ن';
+              words_murrabs_weights[i] = dict_cache_find_iterator.value();
+              words_murrabs_weights[i][0] = user_entered_line[i];
+              words_murrabs_weights[i][2].chop(1);
+            }
+
+          else if (found_oun_yen) // we didn't find word after replacing nun-ghuna with nun so, seeing if the word possibly end on oun and yen and checking for word in dict after chopping these letters from user entered word
+            {
+
+              word.chop(2);
 
               dict_cache_find_iterator = dict_cache.find(word);
 
@@ -199,13 +195,11 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
                 {
                   words_murrabs_weights[i] = dict_cache_find_iterator.value();
                   words_murrabs_weights[i][0] = user_entered_line[i];
-                  words_murrabs_weights[i][2].chop(1);
-
-                  found_cache.insert(user_entered_line[i], words_murrabs_weights[i]);
                 }
-              else
+
+              else if (found_oun) // we were unable to find the word even after chopping the oun and yun, if the word only had oun at its end we would like to add 'he' at its place and then check for word again (here the word will be already chopped so we just need to append 'he')
                 {
-                  word.chop(2);
+                  word += u8"ہ";
 
                   dict_cache_find_iterator = dict_cache.find(word);
 
@@ -213,57 +207,59 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
                     {
                       words_murrabs_weights[i] = dict_cache_find_iterator.value();
                       words_murrabs_weights[i][0] = user_entered_line[i];
-
-                      found_cache.insert(user_entered_line[i], words_murrabs_weights[i]);
-                    }
-
-                  else
-                    {
-                      rejected_cache.insert(word);
                     }
                 }
             }
+        }
 
-          else if (found_bariye)
+      else if (found_bariye)
+        {
+          word.back() = L'ا';
+
+          dict_cache_find_iterator = dict_cache.find(word);
+
+          if (dict_cache_find_iterator != dict_cache.end())
             {
-              word.back() = L'ا';
-              
-              dict_cache_find_iterator = dict_cache.find(word);
-              
-              if (dict_cache_find_iterator != dict_cache.end())
-                {
-                  words_murrabs_weights[i] = dict_cache_find_iterator.value();
-                  words_murrabs_weights[i][0] = user_entered_line[i];
+              words_murrabs_weights[i] = dict_cache_find_iterator.value();
+              words_murrabs_weights[i][0] = user_entered_line[i];
 
-                  found_cache.insert(user_entered_line[i], words_murrabs_weights[i]);
-                }
-
-              else
-                {
-                  word.back() = L'ہ';
-
-                  dict_cache_find_iterator = dict_cache.find(word);
-
-                  if (dict_cache_find_iterator != dict_cache.end())
-                    {
-                      words_murrabs_weights[i] = dict_cache_find_iterator.value();
-                      words_murrabs_weights[i][0] = user_entered_line[i];
-
-                      found_cache.insert(user_entered_line[i], words_murrabs_weights[i]);
-                    }
-
-                  else
-                    {
-                      rejected_cache.insert(word);
-                    }
-                }
             }
-
 
           else
             {
-              rejected_cache.insert(word);
+              word.back() = L'ہ';
+
+              dict_cache_find_iterator = dict_cache.find(word);
+
+              if (dict_cache_find_iterator != dict_cache.end())
+                {
+                  words_murrabs_weights[i] = dict_cache_find_iterator.value();
+                  words_murrabs_weights[i][0] = user_entered_line[i];
+                }
             }
+        }
+
+      else if (found_wao)
+        {
+          word.chop(1);
+          dict_cache_find_iterator = dict_cache.find(word);
+
+          if (dict_cache_find_iterator != dict_cache.end())
+            {
+              words_murrabs_weights[i] = dict_cache_find_iterator.value();
+
+              if (words_murrabs_weights[i][2].back() == L'0')
+                {
+                  words_murrabs_weights[i][2] += L'1';
+                }
+              else
+                {
+                  words_murrabs_weights[i][2] += L'0';
+                }
+
+              words_murrabs_weights[i][0] = user_entered_line[i];
+            }
+
         }
     }
 
@@ -289,7 +285,7 @@ void MainWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_
     {
       if (words_murrab_weight_per_line[i].size() != 3)
         {
-           ui->textEdit->insertHtml(u8"'<span style='color:red'>X</span>' ");
+          ui->textEdit->insertHtml(u8"'<span style='color:red'>X</span>' ");
           continue;
         }
 
@@ -532,11 +528,11 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
               new_accumulated_weight_size += 2;
             }
 
-          //          for (int k = 0; k < prev_accumulated_weight_size; k++)
-          //            {
-          //              accumulated_weights.pop_front();
-          //              new_accumulated_weight_size--;
-          //            }
+//                    for (int k = 0; k < prev_accumulated_weight_size; k++)
+//                      {
+//                        accumulated_weights.pop_front();
+//                        new_accumulated_weight_size--;
+//                      }
         }
 
       else if(last_letter == L'ِ' || last_letter == L'ۂ')
