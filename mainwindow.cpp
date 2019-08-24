@@ -821,7 +821,7 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
            {
                     meter_value.insert(meter_value.size()-1,L'ا');
            }
-          ui->textEdit->insertPlainText(meter_value + " " +"(" + accumulated_weights[i] + ")");
+          ui->textEdit->insertPlainText(meter_value + " " +"(" + accumulated_weights[i]+"1" + ")");
           found_meter = true;
 
           break;
