@@ -207,7 +207,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
 
         }
 
-      else if (found_ea)
+      if (found_ea)
         {
 
           word += u8"ئے";
