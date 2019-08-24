@@ -207,7 +207,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
 
         }
 
-      if (found_ea)
+      if (found_ea && dict_cache_find_iterator == dict_cache.end())
         {
 
           word += u8"ئے";
@@ -220,7 +220,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
             }
         }
 
-      else if (found_noon_ghunna) // found non ghunna at the end of the word
+      else if (found_noon_ghunna && dict_cache_find_iterator == dict_cache.end()) // found non ghunna at the end of the word
         {
           word.back() = L'ن';
 
@@ -759,9 +759,12 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
               }
         }
 
+
       prev_accumulated_weight_size = new_accumulated_weight_size;
       prev_word_last_letter = individual_word.back();
+
     }
+
 
   std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
 
@@ -777,9 +780,17 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
   int size = words_murrab_weight_per_line.size();
 
   if(size <= 0)
+  {
     return;
+  }
+
 
   QVector<QString> accumulated_weights = get_accumulated_weight(words_murrab_weight_per_line);
+    bool tasbeegh_o_azala = false;
+
+
+
+
 
   bool found_meter = false;
 
@@ -788,17 +799,28 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
 
   for (int i = 0; i < accumulated_weights.size(); i++)
     {
-
+        tasbeegh_o_azala = false;
       if(!accumulated_weights[i].isEmpty() && accumulated_weights[i].back()=='1')
+      {
         accumulated_weights[i].chop(1);
+        tasbeegh_o_azala = true;
+      }
 
       index = i;
 
       auto meters_find_iterator = Meter_map.find(accumulated_weights[i].toStdWString());
       if (meters_find_iterator != Meter_map.end())
         {
-          const QString meter_value = QString::fromStdWString(meters_find_iterator->second);
-
+           QString meter_value = QString::fromStdWString(meters_find_iterator->second);
+           if(accumulated_weights.size()>= 2)
+           {
+               if(accumulated_weights[i].back() == L'1')
+                   tasbeegh_o_azala = true;
+           }
+           if(tasbeegh_o_azala)
+           {
+                    meter_value.insert(meter_value.size()-1,L'ا');
+           }
           ui->textEdit->insertPlainText(meter_value + " " +"(" + accumulated_weights[i] + ")");
           found_meter = true;
 
@@ -817,9 +839,23 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
 
   if (meters_find_iterator != Names_map.end())
     {
-      const QString name_value = QString::fromStdWString(meters_find_iterator->second);
+       QString name_value = QString::fromStdWString(meters_find_iterator->second);
+        QString additional_zuhaf = "";
+        if(tasbeegh_o_azala)
+        {
+            QString rukn = accumulated_weights[index].mid(accumulated_weights[index].size()-4,4);
+            if(rukn== u8"0110" && !name_value.contains(u8"مذال"))
+            {
+                additional_zuhaf = u8"مذال";
+            }
+            else if(rukn != u8"0110" && !name_value.contains(u8"مسبغ") && !name_value.contains(u8"مذال"))
+            {
 
-      ui->textEdit->insertPlainText(name_value);
+                additional_zuhaf = u8"مسبغ";
+            }
+
+        }
+      ui->textEdit->insertPlainText(name_value + " " + additional_zuhaf);
     }
   else
     {
@@ -839,7 +875,7 @@ void MainWindow::on_pushButton_clicked()
 
   QVector<QStringList> user_entered_lines = get_user_input();
 
-  QVector<QStringList> words_murrabs_weights_per_line;
+  QVector<QStringList> words_murrabs_weights_per_line = {};
 
   foreach (const QStringList line, user_entered_lines)
     {
