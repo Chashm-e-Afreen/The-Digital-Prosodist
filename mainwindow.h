@@ -29,6 +29,7 @@ private:
 
     QHash<QString, QStringList> dict_cache;
 
+    QString remove_symbols(const QString& user_entered_word);
     QVector<QStringList> get_user_input();
     QVector<QStringList> get_murrab_weight(const QStringList& user_entered_line);
     QList<QString> get_different_weights_of_word(const QString& word);
