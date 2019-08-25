@@ -34,12 +34,14 @@ private:
     QVector<QStringList> get_murrab_weight(const QStringList& user_entered_line);
     QList<QString> get_different_weights_of_word(const QString& word);
     QVector<QString> get_accumulated_weight(const QVector<QStringList>& words_murrab_weight_per_line);
+    QVector<int> get_weights_in_decimal(const QVector<QString>& accumulated_weights);
 
     bool has_different_weights(const QString& word);
 
     void display_arkans(const QVector<QStringList>& words_murrab_weight_per_line);
     void display_meters(const QVector<QStringList>& words_murrab_weight_per_line);
     void display_names(const QVector<QStringList>& words_murrab_weight_per_line);
+
 };
 
 #endif // MAINWINDOW_H

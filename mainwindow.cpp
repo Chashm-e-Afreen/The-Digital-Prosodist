@@ -868,6 +868,8 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
 }
 
 
+
+
 void MainWindow::on_pushButton_clicked()
 {
 
@@ -891,6 +893,17 @@ void MainWindow::on_pushButton_clicked()
   std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
 
   QTextStream(stdout) << "Time elapsed: " << end.count() << "\n ---------------------------- \n";
+}
+QVector<int> get_weights_in_decimal(const QVector<QString>& accumulated_weights)
+{
+    QVector<int> weights_in_decimal = {};
+
+    for(auto&i : accumulated_weights)
+    {
+        weights_in_decimal.push_back(i.toInt());
+    }
+    std::sort(weights_in_decimal.begin(), weights_in_decimal.end());
+    return weights_in_decimal;
 }
 
 void MainWindow::on_pushButton_2_clicked()
