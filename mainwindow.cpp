@@ -67,7 +67,7 @@ QString MainWindow::remove_symbols(const QString& user_entered_word)
   for (int i = 0; i < user_entered_word.size(); i++)
     {
 
-      if ((user_entered_word[i] >= 1613 && user_entered_word[i] <= 1618) && (user_entered_word[i] != 1616 || i != user_entered_word.size() - 1))
+      if ((user_entered_word[i] >= 1613 && user_entered_word[i] <= 1618) && (user_entered_word[i] != 1616 || i != user_entered_word.size() - 1) )
           continue;
 
       new_word += user_entered_word[i];
@@ -158,10 +158,10 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
 
       bool found_ea = (word.size() > 3 && last_two_letters == u8"ئے" && word != u8"ہوئے" );
 
-      if (found_ea)
-        {
-          word = word.chopped(2);
-        }
+//      if (found_ea)
+//        {
+//          word = word.chopped(2);
+//        }
       
       bool found_noon_ghunna = (word.back() == L'ں');
 
@@ -210,7 +210,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
       if (found_ea && dict_cache_find_iterator == dict_cache.end())
         {
 
-          word += u8"ئے";
+          word.chop(2);
 
           dict_cache_find_iterator = dict_cache.find(word);
 
@@ -218,6 +218,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
             {
               words_murrabs_weights[i] = dict_cache_find_iterator.value();
             }
+           words_murrabs_weights[i][0] += u8"ئے";
         }
 
       else if (found_noon_ghunna && dict_cache_find_iterator == dict_cache.end()) // found non ghunna at the end of the word
@@ -310,7 +311,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
                 }
             }
 
-          else if (found_oun_hamzawao)
+          else if (found_oun_hamzawao && dict_cache_find_iterator==dict_cache.end())
           {
             word.chop(2);
 
@@ -354,7 +355,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
             }
         }
 
-      else if (found_wao)
+      else if (found_wao && dict_cache_find_iterator==dict_cache.end())
         {
           word.chop(1);
 
@@ -372,7 +373,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
             }
         }
 
-      else if (found_an)
+      else if (found_an && dict_cache_find_iterator==dict_cache.end())
         {
           word.chop(2);
 
@@ -389,7 +390,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
               words_murrabs_weights[i][0] = user_entered_line[i];
             }
 
-          else if (found_gan)
+          else if (found_gan && dict_cache_find_iterator==dict_cache.end())
             {
               word.back() = L'ہ';
 
@@ -652,7 +653,7 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
         }
 
 
-      if (individual_word.size() > 3 && last_two_letters == u8"ئے" && individual_word != u8"ہوئے" && dict_cache.find(individual_word) == dict_cache.end())
+      if (individual_word.size() > 3 && last_two_letters == u8"ئے")
         {
           for (int k = 0; k < prev_accumulated_weight_size; k++)
             {
@@ -726,6 +727,8 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
                   accumulated_weights.push_back(new_accumulated_weight);
 
                   new_accumulated_weight_size++;
+
+
                 }
 //              else
 //                 {
@@ -882,6 +885,7 @@ void MainWindow::on_pushButton_clicked()
 
        for(auto& i:line)
        {
+
       ui->textEdit->insertPlainText(i);
       ui->textEdit->insertPlainText(" ");
         }
@@ -891,7 +895,10 @@ void MainWindow::on_pushButton_clicked()
      // ui->textEdit->insertPlainText("\n");
       display_meters(words_murrabs_weights_per_line);
       display_arkans(words_murrabs_weights_per_line);
-      ui->textEdit->insertPlainText("\n\n");
+      if(user_entered_lines.size()>1)
+      {
+        ui->textEdit->insertPlainText("\n\n");
+      }
       //      display_names(words_murrabs_weights_per_line);
     }
 
