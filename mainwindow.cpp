@@ -67,7 +67,7 @@ QString MainWindow::remove_symbols(const QString& user_entered_word)
   for (int i = 0; i < user_entered_word.size(); i++)
     {
 
-      if ((user_entered_word[i] >= 1613 && user_entered_word[i] <= 1618) && (user_entered_word[i] != 1616 || i != user_entered_word.size() - 1) && (user_entered_word[i] == 1537) && (user_entered_word[i] == 1548) && (user_entered_word[i] == 1567) && (user_entered_word[i] == 1563))
+      if ((user_entered_word[i] >= 1613 && user_entered_word[i] <= 1618) && (user_entered_word[i] != 1616 || i != user_entered_word.size() - 1) && (user_entered_word[i] == 1537) && (user_entered_word[i] == 1548) && (user_entered_word[i] == 1567) && (user_entered_word[i] == 1563) && (user_entered_word[i] == 1617))
           continue;
 
       new_word += user_entered_word[i];
@@ -356,7 +356,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
             }
         }
 
-      else if (word.back()==L'ا' && dict_cache_find_iterator==dict_cache.end())
+      else if (word.back()==L'ا' && last_two_letters != u8"یا" && dict_cache_find_iterator==dict_cache.end())
         {
 
           word = word.chopped(1);
@@ -386,6 +386,21 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
               words_murrabs_weights[i][2] += L'0';
               words_murrabs_weights[i][0] = user_entered_line[i];
 
+            }
+
+        }
+      else if (last_two_letters ==u8"یا" && dict_cache_find_iterator==dict_cache.end())
+        {
+
+          word = word.chopped(2);
+
+          dict_cache_find_iterator = dict_cache.find(word);
+
+          if (dict_cache_find_iterator != dict_cache.end())
+            {
+              words_murrabs_weights[i] = dict_cache_find_iterator.value();
+              words_murrabs_weights[i][2] += u8"10";
+              words_murrabs_weights[i][0] = user_entered_line[i];
             }
 
         }
@@ -958,16 +973,13 @@ void MainWindow::on_pushButton_clicked()
       ui->textEdit->insertPlainText(" ");
         }
       words_murrabs_weights_per_line = get_murrab_weight(line);
-      //      if (words_murrabs_weights_per_line.back().back().back()=='1' && words_murrabs_weights_per_line.size()>1)
-      //            words_murrabs_weights_per_line.back().back().chop(1);
-     // ui->textEdit->insertPlainText("\n");
       display_meters(words_murrabs_weights_per_line);
       display_arkans(words_murrabs_weights_per_line);
       if(user_entered_lines.size()>1 && line!=user_entered_lines.back())
       {
         ui->textEdit->insertPlainText("\n\n");
       }
-      //      display_names(words_murrabs_weights_per_line);
+
     }
 
   std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
@@ -988,8 +1000,7 @@ QVector<int> get_weights_in_decimal(const QVector<QString>& accumulated_weights)
 
 void MainWindow::on_pushButton_2_clicked()
 {
-  //    qApp->quit();
-  //    QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
+
   ui->textEdit->clear();
 
 }
