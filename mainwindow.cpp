@@ -875,18 +875,26 @@ void MainWindow::on_pushButton_clicked()
 
   auto start = std::chrono::high_resolution_clock::now();
 
+
   QVector<QStringList> user_entered_lines = get_user_input();
 
   QVector<QStringList> words_murrabs_weights_per_line = {};
-
-  foreach (const QStringList line, user_entered_lines)
+  ui->textEdit->clear();
+  for (auto& line: user_entered_lines)
     {
+
+       for(auto& i:line)
+       {
+      ui->textEdit->insertPlainText(i);
+      ui->textEdit->insertPlainText(" ");
+        }
       words_murrabs_weights_per_line = get_murrab_weight(line);
       //      if (words_murrabs_weights_per_line.back().back().back()=='1' && words_murrabs_weights_per_line.size()>1)
       //            words_murrabs_weights_per_line.back().back().chop(1);
-
+     // ui->textEdit->insertPlainText("\n");
       display_meters(words_murrabs_weights_per_line);
       display_arkans(words_murrabs_weights_per_line);
+      ui->textEdit->insertPlainText("\n\n");
       //      display_names(words_murrabs_weights_per_line);
     }
 
