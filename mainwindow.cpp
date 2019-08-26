@@ -326,7 +326,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
 
         }
 
-      else if (found_bariye &&dict_cache_find_iterator==dict_cache.end())
+      else if (found_bariye && dict_cache_find_iterator==dict_cache.end())
         {
 
           word.back() = L'ا';
