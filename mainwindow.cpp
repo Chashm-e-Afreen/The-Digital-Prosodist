@@ -784,14 +784,9 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
     return;
   }
 
-
   QVector<QString> accumulated_weights = get_accumulated_weight(words_murrab_weight_per_line);
     bool tasbeegh_o_azala = false;
-
-
-
-
-
+    QString add_weight ="";
   bool found_meter = false;
 
   ui->textEdit->insertPlainText(u8"\nافاعیل: ");
@@ -820,8 +815,9 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
            if(tasbeegh_o_azala)
            {
                     meter_value.insert(meter_value.size()-1,L'ا');
+                    add_weight = "1";
            }
-          ui->textEdit->insertPlainText(meter_value + " " +"(" + accumulated_weights[i]+"1" + ")");
+          ui->textEdit->insertPlainText(meter_value + " " +"(" + accumulated_weights[i]+ add_weight + ")");
           found_meter = true;
 
           break;
