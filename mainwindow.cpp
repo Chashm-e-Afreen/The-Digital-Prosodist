@@ -869,6 +869,10 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
 
   int size = words_murrab_weight_per_line.size();
 
+  QVector<QString> meter_vector = {};
+
+
+
   if(size <= 0)
   {
     return;
@@ -881,6 +885,7 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
 
   ui->textEdit->insertPlainText(u8"\nافاعیل: ");
   int index = 0;
+
 
   for (int i = 0; i < accumulated_weights.size(); i++)
     {
@@ -926,7 +931,7 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
   if (meters_find_iterator != Names_map.end())
     {
        QString name_value = QString::fromStdWString(meters_find_iterator->second);
-        QString additional_zuhaf = "";
+       QString additional_zuhaf = "";
         if(tasbeegh_o_azala)
         {
             QString rukn = accumulated_weights[index].mid(accumulated_weights[index].size()-4,4);
@@ -945,6 +950,7 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
     }
   else
     {
+
       ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی بحر نہیں مل سکی </span>|");
     }
 
@@ -995,11 +1001,12 @@ QVector<int> get_weights_in_decimal(const QVector<QString>& accumulated_weights)
 
     for(auto&i : accumulated_weights)
     {
-        weights_in_decimal.push_back(i.toInt());
+        weights_in_decimal.push_back(i.toInt(nullptr,2));
     }
     std::sort(weights_in_decimal.begin(), weights_in_decimal.end());
     return weights_in_decimal;
 }
+
 
 void MainWindow::on_pushButton_2_clicked()
 {
