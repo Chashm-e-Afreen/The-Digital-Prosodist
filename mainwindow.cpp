@@ -245,6 +245,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
                 {
                   words_murrabs_weights[i] = dict_cache_find_iterator.value();
                   words_murrabs_weights[i][0] = user_entered_line[i];
+                  word+= u8"وں";
                 }
 
               else if (found_oun) // we were unable to find the word even after chopping the oun and yun, if the word only had oun at its end we would like to add 'he' at its place and then check for word again (here the word will be already chopped so we just need to append 'he')
@@ -258,6 +259,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
                       words_murrabs_weights[i] = dict_cache_find_iterator.value();
                       words_murrabs_weights[i][0] = user_entered_line[i];
                     }
+                  word+=u8"وں";
                 }
 
                 else if (found_hamza_yen)
@@ -786,33 +788,35 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
         }
 
-      else if (individual_word == u8"و" || (individual_word.size() > 3 && ((last_two_letters  == u8"یں" && last_three_letters != u8"ئیں")|| last_two_letters == u8"وں") && dict_cache.find(individual_word) == dict_cache.end()))
+      else if (individual_word == u8"و" || ((individual_word.size() > 3 && ((last_two_letters  == u8"یں" && last_three_letters != u8"ئیں")|| last_two_letters == u8"وں")) && dict_cache.find(individual_word) == dict_cache.end()))
           {
           for (int k = 0; k < prev_accumulated_weight_size; k++)
             {
 //              if(accumulated_weights[k].back() != L'ا' && accumulated_weights[k].back() != L'و')
 //                {
-                if(prev_word_last_letter!=L'ی')
+                if(prev_word_last_letter ==L'ی' && individual_word == u8"و")
                 {
-                    accumulated_weights[k].back() = '1';
-
-                  QString new_accumulated_weight = accumulated_weights[k] + '0';
-
-                  accumulated_weights.push_back(new_accumulated_weight);
-
-                  new_accumulated_weight_size++;
+                    accumulated_weights[k]+= u8"1";
+                    QString new_accumulated_weight = accumulated_weights[k] + u8"0";
+                    QString new_accumulated_weight2 = accumulated_weights[k];
+                    new_accumulated_weight2.chop(1);
+                    new_accumulated_weight2+= u8"1";
+                    QString new_accumulated_weight3 = new_accumulated_weight2 + u8"0";
+                    accumulated_weights.push_back(new_accumulated_weight);
+                    accumulated_weights.push_back(new_accumulated_weight2);
+                    accumulated_weights.push_back(new_accumulated_weight3);
+                    new_accumulated_weight_size += 3;
                 }
                 else {
-                        accumulated_weights[k]+= u8"1";
-                        QString new_accumulated_weight = accumulated_weights[k] + u8"0";
-                        QString new_accumulated_weight2 = accumulated_weights[k];
-                        new_accumulated_weight2.chop(1);
-                        new_accumulated_weight2+= u8"1";
-                        QString new_accumulated_weight3 = new_accumulated_weight2 + u8"0";
-                        accumulated_weights.push_back(new_accumulated_weight);
-                        accumulated_weights.push_back(new_accumulated_weight2);
-                        accumulated_weights.push_back(new_accumulated_weight3);
-                        new_accumulated_weight_size += 3;
+
+
+                        accumulated_weights[k].back() = '1';
+
+                      QString new_accumulated_weight = accumulated_weights[k] + '0';
+
+                      accumulated_weights.push_back(new_accumulated_weight);
+
+                      new_accumulated_weight_size++;
                 }
 
                 }
