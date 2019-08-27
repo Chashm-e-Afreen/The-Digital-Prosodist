@@ -8,9 +8,10 @@
 #include <QTextStream>
 #include <QMessageBox>
 #include <QSet>
-#include <QSpinBox>
-
+#include <cmath>
 #include <chrono>
+#include "levenshtein.h"
+#include <QProcess>
 
 #define TOTAL_DICT_WORDS 99421
 
@@ -232,9 +233,10 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
 
             if (dict_cache_find_iterator != dict_cache.end())
             {
-                words_murrabs_weights[i] = dict_cache_find_iterator.value();
+              words_murrabs_weights[i] = dict_cache_find_iterator.value();
+              words_murrabs_weights[i][0] += u8"ئے";
             }
-            words_murrabs_weights[i][0] += u8"ئے";
+
         }
 
         else if (found_noon_ghunna && dict_cache_find_iterator == dict_cache.end()) // found non ghunna at the end of the word
@@ -271,10 +273,11 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
 
                     if (dict_cache_find_iterator != dict_cache.end())
                     {
-                        words_murrabs_weights[i] = dict_cache_find_iterator.value();
-                        words_murrabs_weights[i][0] = user_entered_line[i];
+                      words_murrabs_weights[i] = dict_cache_find_iterator.value();
+                      words_murrabs_weights[i][0] = user_entered_line[i];
+                      word+=u8"وں";
                     }
-                    word+=u8"وں";
+
                 }
 
                 else if (found_hamza_yen)
@@ -930,10 +933,10 @@ QVector<Accumulated_Weight> MainWindow::get_accumulated_weight(const QVector<QSt
             }
         }
 
-        else if (individual_word.size() > 1 && individual_word != u8"اے" && last_weight != L'1' && (last_letter == L'ا' || last_letter == L'ہ' ||
-                                                                                                    last_letter == L'ی' || last_letter == L'ے' ||
-                                                                                                    last_letter == L'و' || last_letter == L'ؤ')){
-            for (int k = 0; k < prev_accumulated_weight_size; k++)
+      else if (individual_word.size() > 1 && individual_word != u8"اے" && last_weight != L'1' && (last_letter == L'ا' || last_letter == L'ہ' ||
+                                                                                               last_letter == L'ی' || last_letter == L'ے' ||
+                                                                                               last_letter == L'و' || last_letter == L'ؤ' || last_two_letters == u8"ؤں")){
+          for (int k = 0; k < prev_accumulated_weight_size; k++)
             {
                 Accumulated_Weight new_accumulated_weight;
 
@@ -1062,9 +1065,13 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
 
     int size = words_murrab_weight_per_line.size();
 
-    QVector<QString> meter_vector = {};
+//  QVector<unsigned long long> meter_vector = {};
 
-
+//  for(auto&i: Meters_in_Decimal)
+//  {
+//    meter_vector.push_back(i.first);
+//  }
+//   std::sort(meter_vector.begin(),meter_vector.end());
 
     if(size <= 0)
     {
@@ -1112,19 +1119,51 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
         }
     }
 
-    if (!found_meter)
+
+
+std::wstring key = L"";
+  if (!found_meter)
     {
-        ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی مانوس بحر نہیں مل سکی </span>|");
+      int distance = 0;
+      int count =0;
+      for(auto&i : accumulated_weights)
+      {
+
+            for(auto&j: Meter_map)
+            {
+
+               int value = distanceLevenshtein(j.first,i.toStdWString());
+               if( value<distance || count ==0)
+               {
+                    distance=value;
+                    key = j.first;
+                    ++count;
+               }
+            }
+      }
+            auto meters_find_iterator = Meter_map.find(key);
+            if(meters_find_iterator!=Meter_map.end())
+            {
+                QString meter_value = QString::fromStdWString(meters_find_iterator->second);
+                ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی مانوس بحر نہیں مل سکی </span>| ");
+                ui->textEdit->insertPlainText("\n");
+                ui->textEdit->insertHtml(u8"<span style= 'color:#5900b3'> نزدیک ترین بحر کے ارکان : </span>");
+                ui->textEdit->insertHtml(u8"<span style= 'color:black'></span>"+ meter_value);
+            }
+            else
+                ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی مانوس بحر نہیں مل سکی </span>|");
+
     }
 
 
-    ui->textEdit->insertPlainText(u8"\nبحر: ");
-    auto meters_find_iterator = Names_map.find(accumulated_weights[index].bin.toStdWString());
+
+  auto meters_find_iterator = Names_map.find(accumulated_weights[index].toStdWString());
 
     if (meters_find_iterator != Names_map.end())
     {
-        QString name_value = QString::fromStdWString(meters_find_iterator->second);
-        QString additional_zuhaf = "";
+      ui->textEdit->insertPlainText(u8"\nبحر: ");
+       QString name_value = QString::fromStdWString(meters_find_iterator->second);
+       QString additional_zuhaf = "";
         if(tasbeegh_o_azala)
         {
             QString rukn = accumulated_weights[index].bin.mid(accumulated_weights[index].bin.size()-4,4);
@@ -1143,8 +1182,19 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
     }
     else
     {
+      auto it = Names_map.find(key);
+      if(it!= Names_map.end())
+      {
+            QString name_value = QString::fromStdWString(it->second);
+          //  ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی مانوس بحر نہیں مل سکی </span>|");
+            ui->textEdit->insertPlainText("\n");
+            ui->textEdit->insertHtml(u8"<span style='color:#5900b3'>نزدیک ترین بحر کا نام :   </span>");
+            ui->textEdit->insertHtml(u8"<span style= 'color:black'></span>"+ name_value);
+      }
+      else {
+          ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی بحر نہیں مل سکی </span>|");
+      }
 
-        ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی بحر نہیں مل سکی </span>|");
     }
 
     std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
