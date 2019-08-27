@@ -67,7 +67,7 @@ QString MainWindow::remove_symbols(const QString& user_entered_word)
   for (int i = 0; i < user_entered_word.size(); i++)
     {
 
-      if ((user_entered_word[i] >= 1613 && user_entered_word[i] <= 1618) && (user_entered_word[i] != 1616 || i != user_entered_word.size() - 1) && (user_entered_word[i] == 1537) && (user_entered_word[i] == 1548) && (user_entered_word[i] == 1567) && (user_entered_word[i] == 1563) && (user_entered_word[i] == 1617))
+      if (((user_entered_word[i] >= 1613 && user_entered_word[i] <= 1618) || (user_entered_word[i] == 1537) || (user_entered_word[i] == 1548) || (user_entered_word[i] == 1567) || (user_entered_word[i] == 1563)) && (user_entered_word[i] != 1616 || i != user_entered_word.size() - 1) )
           continue;
 
       new_word += user_entered_word[i];
