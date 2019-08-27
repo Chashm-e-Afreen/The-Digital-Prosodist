@@ -8,7 +8,7 @@
 #include <QTextStream>
 #include <QMessageBox>
 #include <QSet>
-
+#include <cmath>
 #include <chrono>
 
 #include <QProcess>
@@ -775,7 +775,7 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
       else if (individual_word.size() > 1 && individual_word != u8"اے" && last_weight != L'1' && (last_letter == L'ا' || last_letter == L'ہ' ||
                                                                                                last_letter == L'ی' || last_letter == L'ے' ||
-                                                                                               last_letter == L'و' || last_letter == L'ؤ')){
+                                                                                               last_letter == L'و' || last_letter == L'ؤ' || last_two_letters == u8"ؤں")){
           for (int k = 0; k < prev_accumulated_weight_size; k++)
             {
               QString new_accumulated_weight = accumulated_weights[k];
@@ -873,7 +873,14 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
 
   int size = words_murrab_weight_per_line.size();
 
-  QVector<QString> meter_vector = {};
+//  QVector<unsigned long long> meter_vector = {};
+
+//  for(auto&i: Meters_in_Decimal)
+//  {
+//    meter_vector.push_back(i.first);
+//  }
+//   std::sort(meter_vector.begin(),meter_vector.end());
+
 
 
 
@@ -923,9 +930,13 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
         }
     }
 
+
+
+
   if (!found_meter)
     {
       ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی مانوس بحر نہیں مل سکی </span>|");
+
     }
 
 
