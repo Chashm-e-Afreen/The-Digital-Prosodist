@@ -62,7 +62,7 @@ private:
     QString islah_but_stylesheet;
 
     QStringList meters_in_bin;
-    QVector<QString> get_accumulated_weight(const QVector<QStringList>& words_murrab_weight_per_line);
+    QVector<Accumulated_Weight> get_accumulated_weight(const QVector<QStringList>& words_murrab_weight_per_line);
     QVector<int> get_weights_in_decimal(const QVector<QString>& accumulated_weights);
 
     bool has_different_weights(const QString& word);
