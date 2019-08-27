@@ -6,6 +6,7 @@
 #include <QVector>
 #include <QHash>
 #include <algorithm>
+
 namespace Ui {
 class MainWindow;
 }
