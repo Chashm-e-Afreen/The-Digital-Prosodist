@@ -48,6 +48,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     QShortcut* push_button_shortcut;
+    QShortcut* push_button_2_shortcut;
 
     QHash<QString, QStringList> dict_cache;
 
@@ -56,7 +57,6 @@ private:
     QVector<QStringList> get_murrab_weight(const QStringList& user_entered_line);
     QList<QString> get_different_weights_of_word(QString word);
 
-
     ProgramMode mode;
 
     QString taqti_but_stylesheet;
@@ -64,6 +64,8 @@ private:
 
     QString prev_taqti_text;
     QString prev_islah_text;
+
+    QString textedit_html;
 
     QStringList meters_in_bin;
     QVector<Accumulated_Weight> get_accumulated_weight(const QVector<QStringList>& words_murrab_weight_per_line);
@@ -74,10 +76,8 @@ private:
     void display_arkans(const QVector<QStringList>& words_murrab_weight_per_line);
     void display_meters(const QVector<QStringList>& words_murrab_weight_per_line);
 
-
     void execute_taqti_program();
     void execute_islah_program();
-
 };
 
 #endif // MAINWINDOW_H

@@ -22,14 +22,19 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->setupUi(this);
 
   push_button_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Return), this);
+  push_button_2_shortcut = new QShortcut(QKeySequence(Qt::Key_Escape), this);
 
   connect(this->push_button_shortcut, SIGNAL(activated()), this, SLOT(on_pushButton_clicked()));
+  connect(this->push_button_2_shortcut, SIGNAL(activated()), this, SLOT(on_pushButton_2_clicked()));
 
   taqti_but_stylesheet = "color: white; background-color: rgb(35, 40, 45); border: none; padding: 5px; margin-bottom: 5px; border-left: 2px solid black;border-right: 2px solid black;";
   islah_but_stylesheet = taqti_but_stylesheet;
 
   ui->taqtiButton->setStyleSheet(taqti_but_stylesheet + "color: rgb(15, 126, 225); font-weight: bold; border-bottom: 4px solid rgb(15, 126, 225);");
   ui->islahButton->setStyleSheet(islah_but_stylesheet);
+
+  textedit_html = prev_islah_text = prev_taqti_text = "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0//EN' 'http://www.w3.org/TR/REC-html40/strict.dtd'><html>\
+<head><meta name='qrichtext' content='1' /><style type='text/css'>* { align:right } p, li { white-space: pre-wrap; }</style></head><body style=' font-family:'MS Shell Dlg 2'; font-size:11pt; font-weight:400; font-style:normal;'><p align='right' style='-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;'></p></body></html>";
 
   mode = ProgramMode::TAQTI;
 
@@ -81,7 +86,7 @@ QString MainWindow::remove_symbols(const QString& user_entered_word)
   for (int i = 0; i < user_entered_word.size(); i++)
     {
 
-      if (((user_entered_word[i] >= 1613 && user_entered_word[i] <= 1618) || (user_entered_word[i] == 1537)) && (user_entered_word[i] != 1616 || i != user_entered_word.size() - 1) )
+      if (((user_entered_word[i] >= 1613 && user_entered_word[i] <= 1618) || (user_entered_word[i] == 1556)) && (user_entered_word[i] != 1616 || i != user_entered_word.size() - 1) )
         continue;
 
       new_word += user_entered_word[i];
@@ -100,7 +105,7 @@ QVector<QStringList> MainWindow::get_user_input()
 
   QString user_entered_combined_words = ui->textEdit->toPlainText();
 
-  QStringList user_entered_individual_lines = user_entered_combined_words.split("\n", QString::SkipEmptyParts);
+  QStringList user_entered_individual_lines = user_entered_combined_words.split(QRegExp("\\s*\n"), QString::SkipEmptyParts);
 
   int total_lines = user_entered_individual_lines.size();
 
@@ -578,13 +583,13 @@ QList<QString> MainWindow::get_different_weights_of_word(QString word)
   return different_unique_weights.toList();
 }
 
-QString accumulate(const QStringList& weights)
+QString accumulate(const QStringList& weights, QString seperator = "")
 {
   QString accum;
 
   for (int i = 0; i < weights.size(); i++)
     {
-      accum += weights[i];
+      accum += weights[i] + ( i == weights.size() - 1 ? "" : seperator);
     }
 
   return accum;
@@ -597,8 +602,14 @@ Accumulated_Weight islah(QVector<Accumulated_Weight>& accumulated_weights_per_li
 
   std::wstring meter_bin = meter.toStdWString();
 
+
   for (int i = 0; i < accumulated_weights_per_line.size(); i++)
     {
+
+      Q_ASSERT(accumulated_weights_per_line[i].bin == accumulate(accumulated_weights_per_line[i].weights));
+      Q_ASSERT(accumulated_weights_per_line[i].weights.size() == accumulated_weights_per_line[i].words.size());
+      Q_ASSERT(accumulated_weights_per_line[i].words.size() == accumulated_weights_per_line[i].rejected.size());
+
       size_t cur_loc = 0;
 
       for (int j = 0; j < accumulated_weights_per_line[i].weights.size(); j++)
@@ -828,12 +839,6 @@ QVector<Accumulated_Weight> MainWindow::get_accumulated_weight(const QVector<QSt
                 }
               accumulated_weights.pop_front();
               --new_accumulated_weight_size;
-
-              for (int k = 0; k < prev_accumulated_weight_size; k++)
-                {
-                  accumulated_weights.pop_front();
-                  new_accumulated_weight_size--;
-                }
             }
 
           else if (first_letter == L'آ')
@@ -862,12 +867,6 @@ QVector<Accumulated_Weight> MainWindow::get_accumulated_weight(const QVector<QSt
 
                   new_accumulated_weight_size++;
 
-                }
-
-              for (int k = 0; k < prev_accumulated_weight_size; k++)
-                {
-                  accumulated_weights.pop_front();
-                  new_accumulated_weight_size--;
                 }
             }
 
@@ -1185,7 +1184,8 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
             {
 
               // size_t value = levenshteinSSE::levenshtein(j.first,accumulated_weights[i].toStdWString());
-              unsigned int value = levenshteinDist(j.first,accumulated_weights[i].toStdWString());
+              unsigned int value = levenshteinDist(j.first,accumulated_weights[i].bin.toStdWString());
+
               if( value<distance || count ==0)
                 {
                   distance=value;
@@ -1201,7 +1201,7 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
         {
 
           QString meter_value = QString::fromStdWString(meters_find_iterator->second);
-          QString original_weight = accumulated_weights[closest_meter_index];
+          Accumulated_Weight original_weight = accumulated_weights[closest_meter_index];
 
           ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی مانوس بحر نہیں مل سکی </span>| ");
           ui->textEdit->insertPlainText("\n");
@@ -1351,35 +1351,54 @@ void MainWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_
   QTextStream(stdout) << "Displaying Arkans: " << end.count() << "\n";
 }
 
-QString find_closest_meter(const QVector<Accumulated_Weight>& accumulated_weights)
+QString find_closest_meter(const QVector<QVector<Accumulated_Weight>>& accumulated_weights_all_lines)
 {
 
-  QString closest_meter;
+  QMap<QString, int> closest_meter_counts;
 
-  int distance = 0;
-  int count = 0;
+  int max_count = INT_MIN;
+  QString max_closest_meter;
 
-  for(auto&i : accumulated_weights)
+  for (auto&accumulated_weights : accumulated_weights_all_lines )
     {
+      QString closest_meter;
 
-      for(auto&j: Meter_map)
+      unsigned int distance = 0;
+      int count = 0;
+
+      for(auto&i : accumulated_weights)
         {
 
-          int value = distanceLevenshtein(j.first,i.bin.toStdWString());
-          if( value<distance || count ==0)
+          for(auto&j: Meter_map)
             {
-              distance=value;
-              closest_meter = QString::fromStdWString(j.first);
-              ++count;
+
+              unsigned int value = levenshteinDist(j.first,i.bin.toStdWString());
+              if( value<distance || count ==0)
+                {
+                  distance=value;
+                  closest_meter = QString::fromStdWString(j.first);
+
+                  closest_meter_counts[closest_meter]++;
+
+                  ++count;
+                }
             }
         }
     }
 
+  for (auto it = closest_meter_counts.begin(); it != closest_meter_counts.end(); it++)
+    {
+      if (it.value() > max_count)
+        {
+          max_count = it.value();
+          max_closest_meter = it.key();
+        }
+    }
 
-  return closest_meter;
+  return max_closest_meter;
 }
 
-QString max_count_meter(const QVector<QStringList>& found_meters, QVector<Accumulated_Weight>& accumulated_weights_all_lines)
+QString max_count_meter(const QVector<QStringList>& found_meters, QVector<QVector<Accumulated_Weight>>& accumulated_weights_all_lines)
 {
   QMap<QString, int> meters_count_in_line;
   QString max_meter;
@@ -1416,7 +1435,10 @@ void MainWindow::execute_taqti_program()
   QVector<QStringList> user_entered_lines = get_user_input();
 
   QVector<QStringList> words_murrabs_weights_per_line = {};
+
   ui->textEdit->clear();
+  ui->textEdit->setHtml(textedit_html);
+
   for (auto& line: user_entered_lines)
     {
 
@@ -1448,6 +1470,7 @@ void MainWindow::execute_islah_program()
 
   QVector<QStringList> all_matched_meters;
 
+
   for (auto& line: user_entered_lines)
     {
 
@@ -1455,18 +1478,36 @@ void MainWindow::execute_islah_program()
 
       accumulated_weights.push_back(get_accumulated_weight(words_murrabs_weights_per_line));
 
-      if (accumulated_weights.back().back().has_meter)
+      if (!accumulated_weights.isEmpty() && !accumulated_weights.back().isEmpty() && accumulated_weights.back().back().has_meter)
         all_matched_meters.push_back(get_matched_meters(accumulated_weights.back()));
     }
+
+  ui->textEdit->clear();
+  ui->textEdit->setHtml(textedit_html);
 
   QString most_matched_meter;
 
   if (!accumulated_weights.isEmpty())
-    most_matched_meter = max_count_meter(all_matched_meters, accumulated_weights.front());
+    most_matched_meter = max_count_meter(all_matched_meters, accumulated_weights);
+
+  bool has_a_valid_verse = false;
 
   for (int i = 0; i < user_entered_lines.size(); i++)
     {
-      ui->textEdit->append("\n");
+      ui->textEdit->append(" ");
+
+      if (accumulated_weights[i].isEmpty() || !accumulated_weights[i].back().has_meter)
+        {
+         ui->textEdit->insertHtml( accumulate(user_entered_lines[i], " ") + u8"<br/> ");
+
+         QString errorMessage = u8"تمام الفاظ کی شناخت نہ کی جا سکی";
+
+         ui->textEdit->insertHtml(u8"<span style='color:red'>" + errorMessage + u8"</span> ");
+
+         ui->textEdit->append(" ");
+
+         continue;
+        }
 
       Accumulated_Weight aw = islah(accumulated_weights[i], most_matched_meter);
 
@@ -1481,12 +1522,31 @@ void MainWindow::execute_islah_program()
               ui->textEdit->insertHtml(u8"<span style='color:green'>" + aw.words[j] + u8"</span> ");
             }
         }
+
+      ui->textEdit->append(" ");
+
+      for (int j = aw.weights.size() - 1; j >= 0; j--)
+        {
+          if (aw.rejected[j])
+            {
+              ui->textEdit->insertHtml(u8"<span style='color:red'>" + aw.weights[j] + u8"</span> ");
+            }
+          else
+            {
+              ui->textEdit->insertHtml(u8"<span style='color:green'>" +  aw.weights[j] + u8"</span> ");
+            }
+        }
+
+      ui->textEdit->append(" ");
+
+      if (!has_a_valid_verse) has_a_valid_verse = true;
     }
 
   auto it = Names_map.find(most_matched_meter.toStdWString());
 
 
-  ui->textEdit->append("\n" + ((it != Names_map.end()) ? QString::fromStdWString(it->second) : ""));
+  if (has_a_valid_verse)
+    ui->textEdit->append(u8"\n اشعار کا موازنہ مندرجہ ذیل بحر سے کیا گیا ہے:  " + ((it != Names_map.end()) ? QString::fromStdWString(it->second) : ""));
 }
 
 void MainWindow::on_pushButton_clicked()
@@ -1510,8 +1570,8 @@ void MainWindow::on_pushButton_clicked()
 
 void MainWindow::on_pushButton_2_clicked()
 {
-
   ui->textEdit->clear();
+  ui->textEdit->setHtml(textedit_html);
 }
 
 void MainWindow::on_actionExit_triggered()
@@ -1521,8 +1581,6 @@ void MainWindow::on_actionExit_triggered()
 
 void MainWindow::on_taqtiButton_clicked()
 {
-  ui->textEdit->setAlignment(Qt::AlignRight);
-
   if (mode == ProgramMode::ISLAH)
     {
       prev_islah_text = ui->textEdit->toHtml();
@@ -1537,8 +1595,6 @@ void MainWindow::on_taqtiButton_clicked()
 
 void MainWindow::on_islahButton_clicked()
 {
-  ui->textEdit->setAlignment(Qt::AlignRight);
-
   if (mode == ProgramMode::TAQTI)
     {
       prev_taqti_text = ui->textEdit->toHtml();
