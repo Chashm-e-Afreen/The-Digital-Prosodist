@@ -716,9 +716,11 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
                   QString new_accumulated_weight = accumulated_weights[k];
 
-                  new_accumulated_weight[accumulated_weights[k].size() - individual_weight.size() - 1] = '1';
-                  new_accumulated_weight.remove(accumulated_weights[k].size() - individual_weight.size(), 1);
-
+                  if (accumulated_weights[k].size() - individual_weight.size() - 1  >= 0)
+                    {
+                      new_accumulated_weight[accumulated_weights[k].size() - individual_weight.size() - 1] = '1';
+                      new_accumulated_weight.remove(accumulated_weights[k].size() - individual_weight.size(), 1);
+                    }
                   accumulated_weights.push_back(new_accumulated_weight);
 
                   new_accumulated_weight_size++;
@@ -737,9 +739,12 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
                   QString new_accumulated_weight = accumulated_weights[k];
 
-                  new_accumulated_weight[accumulated_weights[k].size() - individual_weight.size() - 1] = '1';
-                  new_accumulated_weight[accumulated_weights[k].size() - individual_weight.size() + 1] = '0';
-                  new_accumulated_weight.remove(accumulated_weights[k].size() - individual_weight.size(), 1);
+                  if (accumulated_weights[k].size() - individual_weight.size() - 1 >= 0)
+                    {
+                      new_accumulated_weight[accumulated_weights[k].size() - individual_weight.size() - 1] = '1';
+                      new_accumulated_weight[accumulated_weights[k].size() - individual_weight.size() + 1] = '0';
+                      new_accumulated_weight.remove(accumulated_weights[k].size() - individual_weight.size(), 1);
+                    }
 
                   accumulated_weights.push_back(new_accumulated_weight);
 
