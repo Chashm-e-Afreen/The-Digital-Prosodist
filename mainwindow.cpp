@@ -1429,6 +1429,20 @@ QString max_count_meter(const QVector<QStringList>& found_meters, QVector<QVecto
   return max_meter;
 }
 
+QStringList MainWindow::get_unrecognized_words(const QStringList& user_entered_line)
+{
+  QStringList unrecognized_words;
+
+  for (int i = 0; i < user_entered_line.size(); i++)
+    {
+      auto dict_cache_find_iteartor = dict_cache.find(user_entered_line[i]);
+
+      if (dict_cache_find_iteartor == dict_cache.end())
+        unrecognized_words.push_back(user_entered_line[i]);
+    }
+
+  return unrecognized_words;
+}
 void MainWindow::execute_taqti_program()
 {
   QVector<QStringList> user_entered_lines = get_user_input();
@@ -1502,7 +1516,18 @@ void MainWindow::execute_islah_program()
         {
          ui->textEdit->insertHtml( accumulate(user_entered_lines[i], " ") + u8"<br/> ");
 
-         QString errorMessage = u8"تمام الفاظ کی شناخت نہ کی جا سکی";
+         QStringList unrecognized_words = get_unrecognized_words(user_entered_lines[i]);
+
+         for (int i = 0; i < unrecognized_words.size(); i++)
+           {
+             if (i != 0) ui->textEdit->insertPlainText(u8"،");
+
+              ui->textEdit->insertPlainText(unrecognized_words[i]);
+           }
+
+         ui->textEdit->insertPlainText(": ");
+
+         QString errorMessage = u8"ان الفاظ کی شناخت نہ کی جا سکی";
 
          ui->textEdit->insertHtml(u8"<span style='color:red'>" + errorMessage + u8"</span> ");
 
