@@ -41,7 +41,7 @@ private:
 
     void display_arkans(const QVector<QStringList>& words_murrab_weight_per_line);
     void display_meters(const QVector<QStringList>& words_murrab_weight_per_line);
-    void display_names(const QVector<QStringList>& words_murrab_weight_per_line);
+
 
 };
 
