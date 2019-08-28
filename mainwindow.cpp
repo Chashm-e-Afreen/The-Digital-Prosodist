@@ -992,7 +992,7 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
             {
 
               // size_t value = levenshteinSSE::levenshtein(j.first,accumulated_weights[i].toStdWString());
-              unsigned int value = dist(j.first,accumulated_weights[i].toStdWString());
+              unsigned int value = levenshteinDist(j.first,accumulated_weights[i].toStdWString());
               if( value<distance || count ==0)
                 {
                   distance=value;
