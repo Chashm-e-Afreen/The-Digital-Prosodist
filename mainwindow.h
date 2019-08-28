@@ -21,7 +21,7 @@ struct Accumulated_Weight
   QVector<bool> rejected;
   int rejected_count = 0;
   bool is_tasbeegh_o_azala = false;
-  bool has_meter = false;
+  bool has_meter = true;
 };
 
 class MainWindow : public QMainWindow
@@ -62,6 +62,9 @@ private:
     QString taqti_but_stylesheet;
     QString islah_but_stylesheet;
 
+    QString prev_taqti_text;
+    QString prev_islah_text;
+
     QStringList meters_in_bin;
     QVector<Accumulated_Weight> get_accumulated_weight(const QVector<QStringList>& words_murrab_weight_per_line);
     QVector<int> get_weights_in_decimal(const QVector<QString>& accumulated_weights);
@@ -71,6 +74,9 @@ private:
     void display_arkans(const QVector<QStringList>& words_murrab_weight_per_line);
     void display_meters(const QVector<QStringList>& words_murrab_weight_per_line);
     void display_names(const QVector<QStringList>& words_murrab_weight_per_line);
+
+    void execute_taqti_program();
+    void execute_islah_program();
 
 };
 
