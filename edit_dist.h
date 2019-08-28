@@ -62,4 +62,22 @@ unsigned int levenshteinDist(std::wstring word1, std::wstring word2) {
     return last_position;
 }
 
+unsigned int dist(std::wstring s1,std::wstring s2)
+{
+    //int i=0;
+    unsigned int dist=0;
+    unsigned int l1=s1.length();
+    unsigned int l2=s2.length();
+    unsigned int diff=std::max(l1,l2)-std::min(l1,l2);
+    for(unsigned int i=0;i<std::min(l1,l2);i++)
+    {
+        if(s1[i]!=s2[i])
+            dist++;
+    }
+    for(unsigned int i=0;i<diff;i++)
+    {
+        dist++;
+    }
+    return dist;
+}
 #endif // EDIT_DIST_H

@@ -60,6 +60,7 @@ MainWindow::~MainWindow()
   delete ui;
 }
 
+
 QString MainWindow::remove_symbols(const QString& user_entered_word)
 {
   QString new_word;
@@ -67,7 +68,7 @@ QString MainWindow::remove_symbols(const QString& user_entered_word)
   for (int i = 0; i < user_entered_word.size(); i++)
     {
 
-      if (((user_entered_word[i] >= 1613 && user_entered_word[i] <= 1618) || (user_entered_word[i] == 1537)) && (user_entered_word[i] != 1616 || i != user_entered_word.size() - 1) )
+      if (((user_entered_word[i] >= 1613 && user_entered_word[i] <= 1618) || (user_entered_word[i] == 1556))  && (user_entered_word[i] != 1616 || i != user_entered_word.size() - 1) )
         continue;
 
 
@@ -235,6 +236,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
               words_murrabs_weights[i] = dict_cache_find_iterator.value();
               words_murrabs_weights[i][0] = user_entered_line[i];
               words_murrabs_weights[i][2].chop(1);
+
             }
 
           else if (found_oun_yen) // we didn't find word after replacing nun-ghuna with nun so, seeing if the word possibly end on oun and yen and checking for word in dict after chopping these letters from user entered word
@@ -716,16 +718,18 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
                   QString new_accumulated_weight = accumulated_weights[k];
 
-                  new_accumulated_weight[accumulated_weights[k].size() - individual_weight.size() - 1] = '1';
-                  new_accumulated_weight.remove(accumulated_weights[k].size() - individual_weight.size(), 1);
-
+                  if (accumulated_weights[k].size() - individual_weight.size() - 1  >= 0)
+                    {
+                      new_accumulated_weight[accumulated_weights[k].size() - individual_weight.size() - 1] = '1';
+                      new_accumulated_weight.remove(accumulated_weights[k].size() - individual_weight.size(), 1);
+                    }
                   accumulated_weights.push_back(new_accumulated_weight);
 
                   new_accumulated_weight_size++;
 
                 }
-              accumulated_weights.pop_front();
-              --new_accumulated_weight_size;
+//              accumulated_weights.pop_front();
+//              --new_accumulated_weight_size;
 
               prev_accumulated_weight_size = new_accumulated_weight_size;
             }
@@ -737,17 +741,20 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
                   QString new_accumulated_weight = accumulated_weights[k];
 
-                  new_accumulated_weight[accumulated_weights[k].size() - individual_weight.size() - 1] = '1';
-                  new_accumulated_weight[accumulated_weights[k].size() - individual_weight.size() + 1] = '0';
-                  new_accumulated_weight.remove(accumulated_weights[k].size() - individual_weight.size(), 1);
+                  if (accumulated_weights[k].size() - individual_weight.size() - 1 >= 0)
+                    {
+                      new_accumulated_weight[accumulated_weights[k].size() - individual_weight.size() - 1] = '1';
+                      new_accumulated_weight[accumulated_weights[k].size() - individual_weight.size() + 1] = '0';
+                      new_accumulated_weight.remove(accumulated_weights[k].size() - individual_weight.size(), 1);
+                    }
 
                   accumulated_weights.push_back(new_accumulated_weight);
 
                   new_accumulated_weight_size++;
 
                 }
-              accumulated_weights.pop_front();
-              --new_accumulated_weight_size;
+//              accumulated_weights.pop_front();
+//              --new_accumulated_weight_size;
             }
 
           prev_accumulated_weight_size = new_accumulated_weight_size;
@@ -815,7 +822,7 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
         }
 
-      else if (individual_word == u8"و" || ((individual_word.size() > 3 && ((last_two_letters  == u8"یں" && last_three_letters != u8"ئیں")|| last_two_letters == u8"وں")) && dict_cache.find(individual_word) == dict_cache.end()))
+      else if (individual_word == u8"و" || ((individual_word.size() > 3 && ((last_two_letters  == u8"یں" && last_three_letters != u8"ئیں")|| last_two_letters == u8"وں")) && dict_cache.find(individual_word) == dict_cache.end() && dict_cache.find(individual_word + u8"ن") == dict_cache.end()))
         {
           for (int k = 0; k < prev_accumulated_weight_size; k++)
             {
@@ -865,7 +872,7 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
           QString chopped_individual_word = individual_word.chopped((last_two_letters == u8"ؤں") ? 2:3 );
 
-          if (chopped_individual_word.back() == L'ا')
+          if (chopped_individual_word.back() == L'ا' || chopped_individual_word.back() == L'و')
             {
               for (int k = 0; k < prev_accumulated_weight_size; k++)
                 {
@@ -985,7 +992,7 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
             {
 
               // size_t value = levenshteinSSE::levenshtein(j.first,accumulated_weights[i].toStdWString());
-              unsigned int value = levenshteinDist(j.first,accumulated_weights[i].toStdWString());
+              unsigned int value = dist(j.first,accumulated_weights[i].toStdWString());
               if( value<distance || count ==0)
                 {
                   distance=value;
