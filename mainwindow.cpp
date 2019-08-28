@@ -1,6 +1,6 @@
 ﻿#include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "levenshtein-sse.h"
+
 #include "meters-def.h"
 
 #include <QTextCodec>

@@ -692,7 +692,7 @@ const std::unordered_map<std::string , QString> Ordered_Meters
     {"1462",u8"فاعلن مفاعلن"},
 };
 
-QVector<QString> Ordered_Meters
+QVector<QString> Order_Meters
 {
     "1010101010111010111010",
     "1010101011011010",

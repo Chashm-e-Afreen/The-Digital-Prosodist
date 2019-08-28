@@ -1,4 +1,4 @@
-#ifndef EDIT_DIST_H
+﻿#ifndef EDIT_DIST_H
 #define EDIT_DIST_H
 
 #include <iostream>
@@ -12,7 +12,12 @@
 unsigned int levenshteinDist(std::wstring word1, std::wstring word2) {
     unsigned int size1 = word1.size();
     unsigned int size2 = word2.size();
-    unsigned int verif[size1 + 1][size2 + 1]; // Verification matrix i.e. 2D array which will store the calculated distance.
+    unsigned int** verif = new unsigned int*[size1 + 1]; // Verification matrix i.e. 2D array which will store the calculated distance.
+
+    for (unsigned int i = 0; i < size1 + 1; i++)
+      {
+        verif[i] = new unsigned int [size2 + 1];
+      }
 
     // If one of the words has zero length, the distance is equal to the size of the other word.
     if (size1 == 0)
@@ -44,8 +49,17 @@ unsigned int levenshteinDist(std::wstring word1, std::wstring word2) {
         }
     }
 
+    unsigned int last_position = verif[size1][size2];
+
+    for (unsigned int i = 0; i < size1 + 1; i++)
+      {
+        delete[] verif[i];
+      }
+
+    delete[] verif;
+
     // The last position of the matrix will contain the Levenshtein distance.
-    return verif[size1][size2];
+    return last_position;
 }
 
 #endif // EDIT_DIST_H
