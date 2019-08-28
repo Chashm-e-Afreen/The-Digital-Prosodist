@@ -1202,7 +1202,7 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
           QString meter_value = QString::fromStdWString(meters_find_iterator->second);
           Accumulated_Weight original_weight = accumulated_weights[closest_meter_index];
 
-          ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی مانوس بحر نہیں مل سکی </span>| ");
+          ui->textEdit->insertHtml(u8"<span style='color:red'> کوئی مانوس بحر نہیں مل سکی </span> ");
           ui->textEdit->insertPlainText("\n");
           ui->textEdit->insertHtml(u8"<span style= 'color:#5900b3'> نزدیک ترین بحر کے ارکان : </span>");
           ui->textEdit->insertHtml(u8"<span style= 'color:black'></span>"+ meter_value);
@@ -1316,7 +1316,7 @@ void MainWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_
     {
       if (words_murrab_weight_per_line[i].size() != 3)
         {
-          ui->textEdit->insertHtml(u8"'<span style='color:red'>X</span>' ");
+          ui->textEdit->insertHtml(u8"<span style='color:red'>٭</span> ");
           continue;
         }
 
@@ -1341,7 +1341,7 @@ void MainWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_
         }
       else
         {
-          ui->textEdit->insertHtml(u8"<span style='color:red'>'X' </span>");
+          ui->textEdit->insertHtml(u8"<span style='color:red'>٭</span> ");
         }
     }
 
@@ -1440,13 +1440,12 @@ void MainWindow::execute_taqti_program()
 
   for (auto& line: user_entered_lines)
     {
-
       for(auto& i:line)
         {
-
           ui->textEdit->insertPlainText(i);
           ui->textEdit->insertPlainText(" ");
         }
+
       words_murrabs_weights_per_line = get_murrab_weight(line);
       display_meters(words_murrabs_weights_per_line);
       display_arkans(words_murrabs_weights_per_line);
@@ -1467,6 +1466,8 @@ void MainWindow::execute_islah_program()
 
   QVector<QStringList> words_murrabs_weights_per_line = {};
 
+  QVector<QVector<QStringList>> words_murrabs_weights_all_lines;
+
   QVector<QStringList> all_matched_meters;
 
 
@@ -1476,6 +1477,8 @@ void MainWindow::execute_islah_program()
       words_murrabs_weights_per_line = get_murrab_weight(line);
 
       accumulated_weights.push_back(get_accumulated_weight(words_murrabs_weights_per_line));
+
+      words_murrabs_weights_all_lines.push_back(words_murrabs_weights_per_line);
 
       if (!accumulated_weights.isEmpty() && !accumulated_weights.back().isEmpty() && accumulated_weights.back().back().has_meter)
         all_matched_meters.push_back(get_matched_meters(accumulated_weights.back()));
@@ -1502,6 +1505,8 @@ void MainWindow::execute_islah_program()
          QString errorMessage = u8"تمام الفاظ کی شناخت نہ کی جا سکی";
 
          ui->textEdit->insertHtml(u8"<span style='color:red'>" + errorMessage + u8"</span> ");
+
+         display_arkans(words_murrabs_weights_all_lines[i]);
 
          ui->textEdit->append(" ");
 
@@ -1535,8 +1540,10 @@ void MainWindow::execute_islah_program()
               ui->textEdit->insertHtml(u8"<span style='color:#009933'>" +  aw.weights[j] + u8"</span> ");
             }
         }
+      display_arkans(words_murrabs_weights_all_lines[i]);
 
       ui->textEdit->append(" ");
+
 
       if (!has_a_valid_verse) has_a_valid_verse = true;
     }
