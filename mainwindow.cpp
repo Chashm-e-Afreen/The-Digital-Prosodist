@@ -1,6 +1,6 @@
 ﻿#include "mainwindow.h"
 #include "ui_mainwindow.h"
-
+#include "levenshtein-sse.h"
 #include "meters-def.h"
 
 #include <QTextCodec>
@@ -10,7 +10,6 @@
 #include <QSet>
 #include <cmath>
 #include <chrono>
-#include "levenshtein.h"
 #include <QProcess>
 
 #define TOTAL_DICT_WORDS 99421
@@ -963,7 +962,7 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
             for(auto&j: Meter_map)
             {
 
-               int value = distanceLevenshtein(j.first,accumulated_weights[i].toStdWString());
+               int value = levenshteinSSE::levenshtein(j.first,accumulated_weights[i].toStdWString());
                if( value<distance || count ==0)
                {
                     distance=value;
@@ -985,46 +984,48 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
 				ui->textEdit->insertPlainText("\n");
 				ui->textEdit->insertHtml(u8"<span style= 'color:#5900b3'> نزدیک ترین بحر کے ارکان : </span>");
 				ui->textEdit->insertHtml(u8"<span style= 'color:black'></span>"+ meter_value);
-				ui->textEdit->insertHtml(u8"(");
+//                ui->textEdit->insertPlainText("\n");
+//                ui->textEdit->insertHtml(u8"<span style= 'color:#5900b3'>الفاظ : </span>");
+//				ui->textEdit->insertHtml(u8"(");
 
-			 if(meter_value.size()<original_weight.size())
-			 {
-				for(int i=0; i<original_weight.size(); ++i)
-				{
-						if(i<meter_value.size())
-						{
-							if(original_weight[i] == meter_value[i])
-							{
-								ui->textEdit->insertHtml(u8"<span style= 'color:black'></span>"+ original_weight[i]);
-							}
-							else
-							{
-								 ui->textEdit->insertHtml(u8"<span style= 'color:red'></span>"+ original_weight[i]);
-							}
-						}
-						else
-						{
-							ui->textEdit->insertHtml(u8"<span style= 'color:red'></span>"+ original_weight[i]);
-						}
-				}
-			 }
-			 else
-			 {
-			   for(int i=0; i<original_weight.size(); ++i)
-			   {
-				 if(original_weight[i] == meter_value[i])
-				 {
-					 ui->textEdit->insertHtml(u8"<span style= 'color:red'></span>" + original_weight[i]);
-				 }
-				 else
-				 {
-					  ui->textEdit->insertHtml(u8"<span style= 'color:red'> </span>" + original_weight[i]);
-				 }
+//			 if(meter_value.size()<original_weight.size())
+//			 {
+//				for(int i=0; i<original_weight.size(); ++i)
+//				{
+//						if(i<meter_value.size())
+//						{
+//							if(original_weight[i] == meter_value[i])
+//							{
+//								ui->textEdit->insertHtml(u8"<span style= 'color:black'></span>"+ original_weight[i]);
+//							}
+//							else
+//							{
+//								 ui->textEdit->insertHtml(u8"<span style= 'color:red'></span>"+ original_weight[i]);
+//							}
+//						}
+//						else
+//						{
+//							ui->textEdit->insertHtml(u8"<span style= 'color:red'></span>"+ original_weight[i]);
+//						}
+//				}
+//			 }
+//             else
+//             {
+//			   for(int i=0; i<original_weight.size(); ++i)
+//			   {
+//				 if(original_weight[i] == meter_value[i])
+//				 {
+//					 ui->textEdit->insertHtml(u8"<span style= 'color:red'></span>" + original_weight[i]);
+//				 }
+//				 else
+//				 {
+//					  ui->textEdit->insertHtml(u8"<span style= 'color:red'> </span>" + original_weight[i]);
+//				 }
 
-			   }
-				ui->textEdit->insertPlainText(")");
-			 }
+//			   }
+//				ui->textEdit->insertPlainText(")");
 
+//            }
 		  }
 			else
 				 ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی مانوس بحر نہیں مل سکی </span>|");
