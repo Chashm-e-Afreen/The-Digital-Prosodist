@@ -30,7 +30,6 @@ SOURCES += \
 
 HEADERS += \
         edit_dist.h \
-        levenshtein-sse.h \
         mainwindow.h \
         meters-def.h
 
