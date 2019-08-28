@@ -29,6 +29,7 @@ SOURCES += \
         mainwindow.cpp
 
 HEADERS += \
+        edit_dist.h \
         mainwindow.h \
         meters-def.h
 

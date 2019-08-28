@@ -1,6 +1,4 @@
-﻿1. For words such as زمانے and دیے, the program should should be able to replace the ے with a ا and a ہ 
-and then search the word in the dictionary.
-2. The program should be able to deal with words that end with وں and یں endings e.g. کتابوں، غزلوں ، نظمیں
+﻿1. The program should be able to deal with words that end with وں and یں endings e.g. کتابوں، غزلوں ، نظمیں
 etc. 
 If ends with یں or وں
 	weight.back() = 1

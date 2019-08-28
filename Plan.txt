@@ -1,0 +1,9 @@
+For the metre matching part here's a rough sketch:
+
+1. If no match is found in any of the verses entered then we'd want to first put all of our meter sequences(keys) in a vector, sort it and then use std::search(Boyes-Moore) for a partial match. 
+This of course has a very low priority since no match found is already quite decent.
+
+2. If there is only one match found then all the entered verses should be compared against it. Shouldn't be very difficult to imlement. We'll push the meter into a vector and then compare all 
+combinations against it, std::mismatch/std::search may be used for the comparison. 
+
+3. In case of multiple matches the one that occurs the most should be the one to which everything gets compared.
