@@ -1519,7 +1519,7 @@ void MainWindow::execute_islah_program()
             }
           else
             {
-              ui->textEdit->insertHtml(u8"<span style='color:green'>" + aw.words[j] + u8"</span> ");
+              ui->textEdit->insertHtml(u8"<span style='color:#009933'>" + aw.words[j] + u8"</span> ");
             }
         }
 
@@ -1533,7 +1533,7 @@ void MainWindow::execute_islah_program()
             }
           else
             {
-              ui->textEdit->insertHtml(u8"<span style='color:green'>" +  aw.weights[j] + u8"</span> ");
+              ui->textEdit->insertHtml(u8"<span style='color:#009933'>" +  aw.weights[j] + u8"</span> ");
             }
         }
 
@@ -1543,10 +1543,10 @@ void MainWindow::execute_islah_program()
     }
 
   auto it = Names_map.find(most_matched_meter.toStdWString());
-
+  auto it2 = Meter_map.find(most_matched_meter.toStdWString());
 
   if (has_a_valid_verse)
-    ui->textEdit->append(u8"\n اشعار کا موازنہ مندرجہ ذیل بحر سے کیا گیا ہے:  " + ((it != Names_map.end()) ? QString::fromStdWString(it->second) : ""));
+    ui->textEdit->append(u8"\n اشعار کا موازنہ مندرجہ ذیل بحر سے کیا گیا ہے:  " + ((it != Names_map.end()) ? (QString::fromStdWString(it->second) + " (" + QString::fromStdWString(it2->second) + ")" ): ""));
 }
 
 void MainWindow::on_pushButton_clicked()
@@ -1589,7 +1589,7 @@ void MainWindow::on_taqtiButton_clicked()
 
   mode = ProgramMode::TAQTI;
 
-  ui->taqtiButton->setStyleSheet(taqti_but_stylesheet + "color: rgb(15, 126, 225); font-weight: bold; border-bottom: 4px solid rgb(15, 126, 225);");
+  ui->taqtiButton->setStyleSheet(taqti_but_stylesheet + "color: rgb(255, 255, 255); font-weight: bold; border-bottom: 4px solid rgb(230, 230, 230);");
   ui->islahButton->setStyleSheet(islah_but_stylesheet + "font-weight: normal; border-bottom: none;");
 }
 
@@ -1603,7 +1603,7 @@ void MainWindow::on_islahButton_clicked()
 
   mode = ProgramMode::ISLAH;
 
-  ui->islahButton->setStyleSheet(islah_but_stylesheet + "color: rgb(15, 126, 225); font-weight: bold; border-bottom: 4px solid rgb(15, 126, 225);");
+  ui->islahButton->setStyleSheet(islah_but_stylesheet + "color: rgb(255, 255, 255); font-weight: bold; border-bottom: 4px solid rgb(230, 230, 230);");
   ui->taqtiButton->setStyleSheet(taqti_but_stylesheet + "font-weight: normal; border-bottom: none;");
 }
 
