@@ -25,17 +25,30 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        display.cpp \
+        get_accumulated_weight.cpp \
         main.cpp \
         mainwindow.cpp
 
 HEADERS += \
+        edit_dist.h \
+        levenshtein-sse.h \
         mainwindow.h \
         meters-def.h
 
 FORMS += \
         mainwindow.ui
 
+copydata.commands = $(COPY_DIR) \"$$shell_path($$PWD\\data)\" \"$$shell_path($$OUT_PWD\\data)\"
+first.depends = $(first) copydata
+export(first.depends)
+export(copydata.commands)
+QMAKE_EXTRA_TARGETS += first copydata
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
+
+target.files = data
+
 !isEmpty(target.path): INSTALLS += target
