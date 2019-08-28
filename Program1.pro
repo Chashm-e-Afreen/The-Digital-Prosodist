@@ -29,7 +29,7 @@ SOURCES += \
         mainwindow.cpp
 
 HEADERS += \
-        levenshtein.h \
+        edit_dist.h \
         mainwindow.h \
         meters-def.h
 

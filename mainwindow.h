@@ -54,7 +54,7 @@ private:
     QString remove_symbols(const QString& user_entered_word);
     QVector<QStringList> get_user_input();
     QVector<QStringList> get_murrab_weight(const QStringList& user_entered_line);
-    QList<QString> get_different_weights_of_word(const QString& word);
+    QList<QString> get_different_weights_of_word(QString word);
 
 
     ProgramMode mode;
@@ -69,11 +69,11 @@ private:
     QVector<Accumulated_Weight> get_accumulated_weight(const QVector<QStringList>& words_murrab_weight_per_line);
     QVector<int> get_weights_in_decimal(const QVector<QString>& accumulated_weights);
 
-    bool has_different_weights(const QString& word);
+    bool has_different_weights(QString word);
 
     void display_arkans(const QVector<QStringList>& words_murrab_weight_per_line);
     void display_meters(const QVector<QStringList>& words_murrab_weight_per_line);
-    void display_names(const QVector<QStringList>& words_murrab_weight_per_line);
+
 
     void execute_taqti_program();
     void execute_islah_program();

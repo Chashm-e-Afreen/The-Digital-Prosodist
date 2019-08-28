@@ -10,8 +10,8 @@
 #include <QSet>
 #include <cmath>
 #include <chrono>
-#include "levenshtein.h"
 #include <QProcess>
+#include "edit_dist.h"
 
 #define TOTAL_DICT_WORDS 99421
 
@@ -508,8 +508,18 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
   return words_murrabs_weights;
 }
 
-bool MainWindow::has_different_weights(const QString& word)
+bool MainWindow::has_different_weights(QString word)
 {
+
+  if (word.isEmpty())
+    {
+      return false;
+    }
+
+  else if (word.back() == 1616) // word has 'zaer' at the end
+    {
+      word.chop(1);
+    }
 
   QSet<QString> different_unique_weights;
 
@@ -534,8 +544,18 @@ bool MainWindow::has_different_weights(const QString& word)
   return different_unique_weights.size() > 1;
 }
 
-QList<QString> MainWindow::get_different_weights_of_word(const QString& word)
+QList<QString> MainWindow::get_different_weights_of_word(QString word)
 {
+  if (word.isEmpty())
+    {
+      return QList<QString>();
+    }
+
+  else if (word.back() == 1616)
+    {
+      word.chop(1);
+    }
+
   QSet<QString> different_unique_weights;
 
   auto dict_cache_find_iterator = dict_cache.find(word);
@@ -778,8 +798,8 @@ QVector<Accumulated_Weight> MainWindow::get_accumulated_weight(const QVector<QSt
           prev_accumulated_weight_size = new_accumulated_weight_size;
         }
 
-      if (i != 0 && individual_word.size() > 1 && (prev_word_last_letter != L'ا' && prev_word_last_letter != L'ہ' && prev_word_last_letter != L'ۂ' &&
-                                                   prev_word_last_letter != L'ے' && prev_word_last_letter != L'ؤ' && prev_word_last_letter != L'ں'))
+      if (i != 0  && (prev_word_last_letter != L'ا' && prev_word_last_letter != L'ہ' && prev_word_last_letter != L'ۂ' &&
+                      prev_word_last_letter != L'ے' && prev_word_last_letter != L'ؤ' && prev_word_last_letter != L'ں'))
         {
 
           if (first_letter == L'ا')
@@ -806,6 +826,8 @@ QVector<Accumulated_Weight> MainWindow::get_accumulated_weight(const QVector<QSt
                   new_accumulated_weight_size++;
 
                 }
+              accumulated_weights.pop_front();
+              --new_accumulated_weight_size;
 
               for (int k = 0; k < prev_accumulated_weight_size; k++)
                 {
@@ -935,7 +957,7 @@ QVector<Accumulated_Weight> MainWindow::get_accumulated_weight(const QVector<QSt
 
       else if (individual_word.size() > 1 && individual_word != u8"اے" && last_weight != L'1' && (last_letter == L'ا' || last_letter == L'ہ' ||
                                                                                                   last_letter == L'ی' || last_letter == L'ے' ||
-                                                                                                  last_letter == L'و' || last_letter == L'ؤ' || last_two_letters == u8"ؤں")){
+                                                                                                  last_letter == L'و' || last_letter == L'ؤ' )){
           for (int k = 0; k < prev_accumulated_weight_size; k++)
             {
               Accumulated_Weight new_accumulated_weight;
@@ -1081,6 +1103,14 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
   //  }
   //   std::sort(meter_vector.begin(),meter_vector.end());
 
+
+
+  //  for(auto&i: Meters_in_Decimal)
+  //  {
+  //    meter_vector.push_back(i.first);
+  //  }
+  //   std::sort(meter_vector.begin(),meter_vector.end());
+
   if(size <= 0)
     {
       return;
@@ -1130,33 +1160,95 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
 
 
   std::wstring key = L"";
+  int closest_meter_index = 0;
   if (!found_meter)
     {
-      int distance = 0;
+
+      unsigned int distance = 0;
       int count =0;
-      for(auto&i : accumulated_weights)
+      for(int i=0; i<accumulated_weights.size(); ++i)
         {
+          //			   auto it = std::lower_bound(Ordered_Meters.begin(), Ordered_Meters.end(), accumulated_weights[i]);
+          //               auto key_address = (it - Ordered_Meters.begin());
+          //               int value= distanceLevenshtein(Ordered_Meters[key_address], accumulated_weights[i]);
+          //               if (value<distance || count == 0)
+          //               {
+          //                   distance = value;
+          //                   key = Ordered_Meters[key_address].toStdWString();
+          //                   ++count;
+          //                   closest_meter_index = i;
+
+
+          //               }
 
           for(auto&j: Meter_map)
             {
 
-              int value = distanceLevenshtein(j.first,i.bin.toStdWString());
+              // size_t value = levenshteinSSE::levenshtein(j.first,accumulated_weights[i].toStdWString());
+              unsigned int value = levenshteinDist(j.first,accumulated_weights[i].toStdWString());
               if( value<distance || count ==0)
                 {
                   distance=value;
                   key = j.first;
                   ++count;
+                  closest_meter_index = i;
+
                 }
             }
         }
       auto meters_find_iterator = Meter_map.find(key);
       if(meters_find_iterator!=Meter_map.end())
         {
+
           QString meter_value = QString::fromStdWString(meters_find_iterator->second);
+          QString original_weight = accumulated_weights[closest_meter_index];
+
           ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی مانوس بحر نہیں مل سکی </span>| ");
           ui->textEdit->insertPlainText("\n");
           ui->textEdit->insertHtml(u8"<span style= 'color:#5900b3'> نزدیک ترین بحر کے ارکان : </span>");
           ui->textEdit->insertHtml(u8"<span style= 'color:black'></span>"+ meter_value);
+          //                ui->textEdit->insertPlainText("\n");
+          //                ui->textEdit->insertHtml(u8"<span style= 'color:#5900b3'>الفاظ : </span>");
+          //				ui->textEdit->insertHtml(u8"(");
+
+          //			 if(meter_value.size()<original_weight.size())
+          //			 {
+          //				for(int i=0; i<original_weight.size(); ++i)
+          //				{
+          //						if(i<meter_value.size())
+          //						{
+          //							if(original_weight[i] == meter_value[i])
+          //							{
+          //								ui->textEdit->insertHtml(u8"<span style= 'color:black'></span>"+ original_weight[i]);
+          //							}
+          //							else
+          //							{
+          //								 ui->textEdit->insertHtml(u8"<span style= 'color:red'></span>"+ original_weight[i]);
+          //							}
+          //						}
+          //						else
+          //						{
+          //							ui->textEdit->insertHtml(u8"<span style= 'color:red'></span>"+ original_weight[i]);
+          //						}
+          //				}
+          //			 }
+          //             else
+          //             {
+          //			   for(int i=0; i<original_weight.size(); ++i)
+          //			   {
+          //				 if(original_weight[i] == meter_value[i])
+          //				 {
+          //					 ui->textEdit->insertHtml(u8"<span style= 'color:red'></span>" + original_weight[i]);
+          //				 }
+          //				 else
+          //				 {
+          //					  ui->textEdit->insertHtml(u8"<span style= 'color:red'> </span>" + original_weight[i]);
+          //				 }
+
+          //			   }
+          //				ui->textEdit->insertPlainText(")");
+
+          //            }
         }
       else
         ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی مانوس بحر نہیں مل سکی </span>|");
@@ -1199,9 +1291,9 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
           ui->textEdit->insertHtml(u8"<span style='color:#5900b3'>نزدیک ترین بحر کا نام :   </span>");
           ui->textEdit->insertHtml(u8"<span style= 'color:black'></span>"+ name_value);
         }
-      else {
-          ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی بحر نہیں مل سکی </span>|");
-        }
+      //      else {
+      //          ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی بحر نہیں مل سکی </span>|");
+      //      }
 
     }
 
@@ -1413,18 +1505,6 @@ void MainWindow::on_pushButton_clicked()
   std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
 
   QTextStream(stdout) << "Time elapsed: " << end.count() << "\n ---------------------------- \n";
-}
-
-QVector<int> get_weights_in_decimal(const QVector<QString>& accumulated_weights)
-{
-  QVector<int> weights_in_decimal = {};
-
-  for(auto&i : accumulated_weights)
-    {
-      weights_in_decimal.push_back(i.toInt(nullptr,2));
-    }
-  std::sort(weights_in_decimal.begin(), weights_in_decimal.end());
-  return weights_in_decimal;
 }
 
 
