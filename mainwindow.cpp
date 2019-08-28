@@ -837,8 +837,7 @@ QVector<Accumulated_Weight> MainWindow::get_accumulated_weight(const QVector<QSt
                   new_accumulated_weight_size++;
 
                 }
-              accumulated_weights.pop_front();
-              --new_accumulated_weight_size;
+
             }
 
           else if (first_letter == L'آ')
