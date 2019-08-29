@@ -56,7 +56,7 @@ private:
   QVector<QStringList> get_user_input();
   QVector<QStringList> get_murrab_weight(const QStringList& user_entered_line);
   QList<QString> get_different_weights_of_word(QString word);
-  QStringList get_unrecognized_words(const QStringList& user_entered_line);
+  QStringList get_unrecognized_words(const QStringList& user_entered_line, const QVector<QStringList>& words_murrabs_weight_per_line);
 
   ProgramMode mode;
 
@@ -68,7 +68,6 @@ private:
 
   QString textedit_html;
 
-  QStringList meters_in_bin;
   QVector<Accumulated_Weight> get_accumulated_weight(const QVector<QStringList>& words_murrab_weight_per_line);
   QVector<int> get_weights_in_decimal(const QVector<QString>& accumulated_weights);
 
