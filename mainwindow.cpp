@@ -13,7 +13,7 @@
 #include <QProcess>
 #include "edit_dist.h"
 
-#define TOTAL_DICT_WORDS 99421
+#define TOTAL_DICT_WORDS 99217
 
 MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
@@ -38,13 +38,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
   mode = ProgramMode::TAQTI;
 
-  meters_in_bin.reserve(int(Meter_map.size()));
-
-  for (const auto& pair : Meter_map)
-    {
-      meters_in_bin.push_back(QString::fromStdWString(pair.first));
-    }
-
   QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 
   QString dict_file_path = "data/words_murrab_weight_unique.txt";
@@ -67,8 +60,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
       if (line.size() != 3) continue;
 
-      dict_cache.insertMulti(line[0], {line[0], line[1],line[2]}); // With word as a key
-      dict_cache.insertMulti(line[1], {line[0], line[1], line[2]}); // With murrab also as a key (User can potentially enter word with symbols also so, without this we would have rejected valid word)
+      dict_cache.insertMulti(line[0], {line[0], line[1], line[2]}); // With word as a key
     }
 
   file_read.close();
@@ -152,11 +144,11 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
           last_three_letters = word.mid(word.size() - 3, 3);
         }
 
-      bool found_hamza_e_izafat  = (word.back() == L'ۂ');
+      bool found_hamza_e_izafat  = (word.back() == L'ۂ' || last_two_letters == u8"ۂ" );
 
       if (found_hamza_e_izafat)
         {
-          word.chop(1);
+          word.chop( (word.back() == L'ۂ') ? 1:2 );
           word += u8"ہِ";
         }
 
@@ -203,7 +195,6 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
       bool found_gan = (word.size() > 4 && last_three_letters == u8"گان");
 
       bool found_gaan = (word.size() > 4 && last_three_letters == u8"گاں");
-
 
       bool found_hamza_yen = (word.size() > 4 && last_three_letters == u8"ئیں");
 
@@ -817,6 +808,8 @@ QVector<Accumulated_Weight> MainWindow::get_accumulated_weight(const QVector<QSt
             {
               for (int k = 0; k < prev_accumulated_weight_size; k++)
                 {
+                  if (accumulated_weights[k].bin.size() - accumulated_weights[k].weights.back().size() - 1 >= 0)
+                    {
                   Accumulated_Weight new_accumulated_weight;
 
                   new_accumulated_weight.bin = accumulated_weights[k].bin;
@@ -835,7 +828,7 @@ QVector<Accumulated_Weight> MainWindow::get_accumulated_weight(const QVector<QSt
 
                   Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
                   new_accumulated_weight_size++;
-
+                  }
                 }
 
             }
@@ -844,6 +837,9 @@ QVector<Accumulated_Weight> MainWindow::get_accumulated_weight(const QVector<QSt
             {
               for (int k = 0; k < prev_accumulated_weight_size; k++)
                 {
+
+                  if (accumulated_weights[k].bin.size() - accumulated_weights[k].weights.back().size() - 1 >= 0)
+                    {
                   Accumulated_Weight new_accumulated_weight;
 
                   new_accumulated_weight.bin = accumulated_weights[k].bin;
@@ -865,7 +861,7 @@ QVector<Accumulated_Weight> MainWindow::get_accumulated_weight(const QVector<QSt
                   Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
                   new_accumulated_weight_size++;
-
+                    }
                 }
             }
 
@@ -929,7 +925,7 @@ QVector<Accumulated_Weight> MainWindow::get_accumulated_weight(const QVector<QSt
             }
         }
 
-      else if(last_letter == L'ِ' || last_letter == L'ۂ')
+      else if(last_letter == L'ِ' || last_letter == L'ۂ' || last_two_letters == u8"ۂ")
         {
           for (int k = 0; k < prev_accumulated_weight_size; k++)
             {
@@ -1350,7 +1346,7 @@ void MainWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_
   QTextStream(stdout) << "Displaying Arkans: " << end.count() << "\n";
 }
 
-QString find_closest_meter(const QVector<QVector<Accumulated_Weight>>& accumulated_weights_all_lines)
+QString get_closest_meter(const QVector<QVector<Accumulated_Weight>>& accumulated_weights_all_lines)
 {
 
   QMap<QString, int> closest_meter_counts;
@@ -1422,23 +1418,23 @@ QString max_count_meter(const QVector<QStringList>& found_meters, QVector<QVecto
 
   if (count == 0)
     {
-      QString closest_meter = find_closest_meter(accumulated_weights_all_lines);/*"1101010110101011010101101010";  //  ہزج مثمن سالم | مفاعیلن مفاعیلن مفاعیلن مفاعیلن*/
+      QString closest_meter = get_closest_meter(accumulated_weights_all_lines);/*"1101010110101011010101101010";  //  ہزج مثمن سالم | مفاعیلن مفاعیلن مفاعیلن مفاعیلن*/
       max_meter = closest_meter;
     }
 
   return max_meter;
 }
 
-QStringList MainWindow::get_unrecognized_words(const QStringList& user_entered_line)
+QStringList MainWindow::get_unrecognized_words(const QStringList& user_entered_line, const QVector<QStringList>& words_murrabs_weight_per_line)
 {
   QStringList unrecognized_words;
 
-  for (int i = 0; i < user_entered_line.size(); i++)
+  for (int i = 0; i < words_murrabs_weight_per_line.size(); i++)
     {
-      auto dict_cache_find_iteartor = dict_cache.find(user_entered_line[i]);
-
-      if (dict_cache_find_iteartor == dict_cache.end())
-        unrecognized_words.push_back(user_entered_line[i]);
+      if (words_murrabs_weight_per_line[i].size() != 3)
+        {
+          unrecognized_words.push_back(user_entered_line[i]);
+        }
     }
 
   return unrecognized_words;
@@ -1510,13 +1506,13 @@ void MainWindow::execute_islah_program()
 
   for (int i = 0; i < user_entered_lines.size(); i++)
     {
-      ui->textEdit->append(" ");
+      ui->textEdit->insertPlainText("\n");
 
       if (accumulated_weights[i].isEmpty() || !accumulated_weights[i].back().has_meter)
         {
          ui->textEdit->insertHtml( accumulate(user_entered_lines[i], " ") + u8"<br/> ");
 
-         QStringList unrecognized_words = get_unrecognized_words(user_entered_lines[i]);
+         QStringList unrecognized_words = get_unrecognized_words(user_entered_lines[i], words_murrabs_weights_all_lines[i]);
 
          for (int i = 0; i < unrecognized_words.size(); i++)
            {
@@ -1533,7 +1529,7 @@ void MainWindow::execute_islah_program()
 
          display_arkans(words_murrabs_weights_all_lines[i]);
 
-         ui->textEdit->append(" ");
+         ui->textEdit->insertPlainText("\n");
 
          continue;
         }
@@ -1552,7 +1548,7 @@ void MainWindow::execute_islah_program()
             }
         }
 
-      ui->textEdit->append(" ");
+      ui->textEdit->insertPlainText("\n");
 
       for (int j = aw.weights.size() - 1; j >= 0; j--)
         {
@@ -1567,7 +1563,7 @@ void MainWindow::execute_islah_program()
         }
       display_arkans(words_murrabs_weights_all_lines[i]);
 
-      ui->textEdit->append(" ");
+      ui->textEdit->insertPlainText("\n");
 
 
       if (!has_a_valid_verse) has_a_valid_verse = true;
@@ -1578,6 +1574,8 @@ void MainWindow::execute_islah_program()
 
   if (has_a_valid_verse)
     ui->textEdit->append(u8"\n اشعار کا موازنہ مندرجہ ذیل بحر سے کیا گیا ہے:  " + ((it != Names_map.end()) ? (QString::fromStdWString(it->second) + " (" + QString::fromStdWString(it2->second) + ")" ): ""));
+
+  ui->textEdit->moveCursor(QTextCursor::Start);
 }
 
 void MainWindow::on_pushButton_clicked()
