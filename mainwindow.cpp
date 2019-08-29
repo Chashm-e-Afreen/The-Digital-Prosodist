@@ -725,7 +725,7 @@ QVector<Accumulated_Weight> MainWindow::get_accumulated_weight(const QVector<QSt
 
       if (!has_multiple_weights)
         {
-          for (int j = 0; j < accumulated_weights.size(); j++)
+            for (int j = 0; j < accumulated_weights.size(); j++)
             {
               if (individual_word == u8"و")
                 break;
@@ -949,9 +949,9 @@ QVector<Accumulated_Weight> MainWindow::get_accumulated_weight(const QVector<QSt
             }
         }
 
-      else if (individual_word.size() > 1 && individual_word != u8"اے" && last_weight != L'1' && (individual_word!=words_murrab_weight_per_line.back().at(0) && last_letter != "ؤ") &&(last_letter == L'ا' || last_letter == L'ہ' ||
-                                                                                                  last_letter == L'ی' || last_letter == L'ے' ||
-                                                                                                  last_letter == L'و' || last_letter == L'ؤ' )){
+      else if (individual_word.size() > 2 && last_weight != L'1' && (i != size - 1 && last_letter != L'ؤ') && (last_letter == L'ا' || last_letter == L'ہ' ||
+                                                                                                        last_letter == L'ی' || last_letter == L'ے' ||
+                                                                                                        last_letter == L'و' || last_letter == L'ؤ' )){
           for (int k = 0; k < prev_accumulated_weight_size; k++)
             {
               Accumulated_Weight new_accumulated_weight;
