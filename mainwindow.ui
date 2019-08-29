@@ -182,9 +182,6 @@ p, li { white-space: pre-wrap; }
           <bold>false</bold>
          </font>
         </property>
-        <property name="toolTip">
-         <string>Esc</string>
-        </property>
         <property name="styleSheet">
          <string notr="true"/>
         </property>
@@ -219,7 +216,7 @@ p, li { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>720</width>
-     <height>21</height>
+     <height>17</height>
     </rect>
    </property>
    <property name="font">
@@ -328,7 +325,7 @@ QMenuBar::item:selected {
   </action>
   <action name="actionFont_Size">
    <property name="text">
-    <string>Font</string>
+    <string>Font Size</string>
    </property>
   </action>
  </widget>
