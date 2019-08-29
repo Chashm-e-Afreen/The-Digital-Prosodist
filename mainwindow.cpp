@@ -8,9 +8,9 @@
 #include <QTextStream>
 #include <QMessageBox>
 #include <QSet>
-#include <cmath>
+#include <QInputDialog>
+
 #include <chrono>
-#include <QProcess>
 #include "edit_dist.h"
 
 #define TOTAL_DICT_WORDS 99217
@@ -1638,5 +1638,10 @@ void MainWindow::on_islahButton_clicked()
 
 void MainWindow::on_actionFont_Size_triggered()
 {
+  bool ok;
 
+  int new_font_size = QInputDialog::getInt(this, "New Font Size", "Select new font size : ",
+                                           ui->textEdit->fontInfo().pointSize(), 8, 74, 1, &ok, Qt::FramelessWindowHint);
+
+  QTextStream(stdout) << "New Font Size: " << new_font_size;
 }
