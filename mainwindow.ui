@@ -328,7 +328,7 @@ QMenuBar::item:selected {
   </action>
   <action name="actionFont_Size">
    <property name="text">
-    <string>Font Size</string>
+    <string>Font</string>
    </property>
   </action>
  </widget>
