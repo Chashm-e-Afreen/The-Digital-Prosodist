@@ -1548,7 +1548,7 @@ void MainWindow::execute_islah_program()
             }
           else
             {
-              ui->textEdit->insertHtml(u8"<span style='color:#009933'>" + aw.words[j] + u8"</span> ");
+              ui->textEdit->insertHtml(u8"<span style='color:#2e7d32 '>" + aw.words[j] + u8"</span> ");
             }
         }
 
@@ -1562,7 +1562,7 @@ void MainWindow::execute_islah_program()
             }
           else
             {
-              ui->textEdit->insertHtml(u8"<span style='color:#009933'>" +  aw.weights[j] + u8"</span> ");
+              ui->textEdit->insertHtml(u8"<span style='color:#008073'>" +  aw.weights[j] + u8"</span> ");
             }
         }
       display_arkans(words_murrabs_weights_all_lines[i]);
@@ -1577,7 +1577,7 @@ void MainWindow::execute_islah_program()
   auto it2 = Meter_map.find(most_matched_meter.toStdWString());
 
   if (has_a_valid_verse)
-    ui->textEdit->append(u8"\n اشعار کا موازنہ مندرجہ ذیل بحر سے کیا گیا ہے:  " + ((it != Names_map.end()) ? (QString::fromStdWString(it->second) + " (" + QString::fromStdWString(it2->second) + ")" ): ""));
+    ui->textEdit->append(u8"\n اشعار کا موازنہ اس بحر سے کیا گیا ہے:  " + ((it != Names_map.end()) ? (QString::fromStdWString(it->second) + " (" + QString::fromStdWString(it2->second) + ")" ): ""));
 }
 
 void MainWindow::on_pushButton_clicked()
