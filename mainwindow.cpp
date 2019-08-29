@@ -1,76 +1,501 @@
-﻿#include "mainwindow.h"
-#include "ui_mainwindow.h"
-
-#include "meters-def.h"
+#include "CustomWindow.h"
+#include "ui_CustomWindow.h"
+#include <QPainter>
+#include <QMouseEvent>
+#include <QDesktopWidget>
+#include <QCursor>
+#include <QSettings>
+#include <QStyleOption>
+#include <QMenu>
+#include <QTextOption>
 
 #include <QTextCodec>
 #include <QFile>
 #include <QTextStream>
 #include <QMessageBox>
 #include <QSet>
-#include <cmath>
+#include <QFontDialog>
 #include <chrono>
-#include <QProcess>
 #include "edit_dist.h"
+#include "meters-def.h"
 
-#define TOTAL_DICT_WORDS 99421
+#define TOTAL_DICT_WORDS 99217
 
-MainWindow::MainWindow(QWidget *parent) :
-  QMainWindow(parent),
-  ui(new Ui::MainWindow)
+CustomWindow::CustomWindow(QWidget *parent) : QWidget(parent), ui(new Ui::CustomWindow)
 {
-  ui->setupUi(this);
+    QFile file(":/CustomWindow.css");
 
-  push_button_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Return), this);
-
-  connect(this->push_button_shortcut, SIGNAL(activated()), this, SLOT(on_pushButton_clicked()));
-
-  QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
-
-
-  QString dict_file_path = "data/words_murrab_weight_unique.txt";
-
-  QFile file_read(dict_file_path);
-
-  if (!file_read.open(QIODevice::ReadOnly | QIODevice::Text))
+    if (file.open(QFile::ReadOnly))
     {
-      QMessageBox::warning(this, "Error", "Unable to open dictionary to fetch words");
-      return;
+        setStyleSheet(file.readAll());
+        file.close();
     }
 
-  QTextStream text_stream(&file_read);
+    ui->setupUi(this);
 
-  dict_cache.reserve(TOTAL_DICT_WORDS * 2);
+    setWindowFlags(Qt::CustomizeWindowHint);
+    setWindowFlags(Qt::FramelessWindowHint);
+    setAttribute(Qt::WA_DeleteOnClose);
+    setMouseTracking(true);
 
-  while(!text_stream.atEnd())
+    ui->titleBar->setMouseTracking(true);
+    ui->LTitle->setMouseTracking(true);
+    ui->tbMenu->setMouseTracking(true);
+    ui->pbMin->setMouseTracking(true);
+    ui->pbMax->setMouseTracking(true);
+    ui->pbClose->setMouseTracking(true);
+    ui->centralWidget->setMouseTracking(true);
+
+    addAction(ui->actionClose);
+
+    connect(ui->pbMin, &QPushButton::clicked, this, &CustomWindow::minimizeBtnClicked);
+    connect(ui->pbMax, &QPushButton::clicked, this, &CustomWindow::maximizeBtnClicked);
+    connect(ui->pbClose, &QPushButton::clicked, this, &CustomWindow::close);
+
+    QSettings settings("dialogs.ini", QSettings::IniFormat);
+    const auto geo = settings.value("geometry").toRect();
+    const auto desktopSize = QApplication::desktop();
+
+    if (geo.height() > 0 and geo.x() < desktopSize->width() and geo.width() > 0 and geo.y() < desktopSize->height())
+		setGeometry(geo);
+
+	if (settings.value("maximized").toBool())
     {
-      QStringList line = text_stream.readLine().split(',');
+		showMaximized();
+        ui->pbMax->setIcon(QIcon(":/ui/images/app_rest.png"));
+    }
+    push_button_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Return), this);
+    push_button_2_shortcut = new QShortcut(QKeySequence(Qt::Key_Escape), this);
 
-      if (line.size() != 3) continue;
+    connect(this->push_button_shortcut, SIGNAL(activated()), this, SLOT(on_pushButton_clicked()));
+    connect(this->push_button_2_shortcut, SIGNAL(activated()), this, SLOT(on_pushButton_2_clicked()));
 
-      dict_cache.insertMulti(line[0], {line[0], line[1],line[2]}); // With word as a key
-      dict_cache.insertMulti(line[1], {line[0], line[1], line[2]}); // With murrab also as a key (User can potentially enter word with symbols also so, without this we would have rejected valid word)
+
+    islah_but_stylesheet = taqti_but_stylesheet;
+
+
+
+    textedit_html = prev_islah_text = prev_taqti_text = "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0//EN' 'http://www.w3.org/TR/REC-html40/strict.dtd'><html><head><meta name='qrichtext' content='1' /><style type='text/css'>* { align:right; } p, li { white-space: pre-wrap; }</style></head><body style=\"font-family:'Assistant, Mehr Nastaliq Web'; font-size:15pt; font-weight:400; font-style:normal;\"><p align='right' style='-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;'></p></body></html>";
+
+    mode = ProgramMode::TAQTI;
+
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+
+    QString dict_file_path = "C:/Users/Muhammad Rehan/Desktop/projects/SmallPillsOfQt-master/CustomWindow - 1/CustomWindow/data/words_murrab_weight_unique.txt";
+
+    QFile file_read(dict_file_path);
+
+    if (!file_read.open(QIODevice::ReadOnly | QIODevice::Text))
+      {
+        QMessageBox::warning(this, "Error", "Unable to open dictionary to fetch words");
+        return;
+      }
+
+    QTextStream text_stream(&file_read);
+
+    dict_cache.reserve(TOTAL_DICT_WORDS * 2);
+
+    while(!text_stream.atEnd())
+      {
+        QStringList line = text_stream.readLine().split(',');
+
+        if (line.size() != 3) continue;
+
+        dict_cache.insertMulti(line[0], {line[0], line[1], line[2]}); // With word as a key
+      }
+
+    file_read.close();
+}
+
+CustomWindow::~CustomWindow()
+{
+	QSettings settings("dialogs.ini", QSettings::IniFormat);
+	settings.setValue("geometry", geometry());
+	settings.setValue("maximized", isMaximized());
+
+    delete ui;
+}
+
+void CustomWindow::mouseMoveEvent(QMouseEvent *e)
+{
+    const auto xMouse = e->pos().x();
+    const auto yMouse = e->pos().y();
+    const auto wWidth = geometry().width();
+    const auto wHeight = geometry().height();
+
+    if (mMoveWidget)
+    {
+        mInResizeZone = false;
+        moveWindow(e);
+    }
+    else if (mAllowResize)
+        resizeWindow(e);
+    else if (xMouse >= wWidth - PIXELS_TO_ACT) //Cursor right side
+    {
+        mInResizeZone = true;
+
+        if (yMouse >= wHeight - PIXELS_TO_ACT)
+            setCursor(Qt::SizeFDiagCursor);
+        else if (yMouse <= PIXELS_TO_ACT)
+            setCursor(Qt::SizeBDiagCursor);
+        else
+            setCursor(Qt::SizeHorCursor);
+
+        resizeWindow(e);
+    }
+    else if (xMouse <= PIXELS_TO_ACT) //Cursor left side
+    {
+        mInResizeZone = true;
+
+        if (yMouse >= wHeight - PIXELS_TO_ACT)
+            setCursor(Qt::SizeBDiagCursor);
+        else if (yMouse <= PIXELS_TO_ACT)
+            setCursor(Qt::SizeFDiagCursor);
+        else
+            setCursor(Qt::SizeHorCursor);
+
+        resizeWindow(e);
+    }
+    else if (yMouse >= wHeight - PIXELS_TO_ACT) //Cursor low side
+    {
+        mInResizeZone = true;
+        setCursor(Qt::SizeVerCursor);
+
+        resizeWindow(e);
+    }
+    else if (yMouse <= PIXELS_TO_ACT) //Cursor top side
+    {
+        mInResizeZone = true;
+        setCursor(Qt::SizeVerCursor);
+
+        resizeWindow(e);
+    }
+    else
+    {
+        mInResizeZone = false;
+        setCursor(Qt::ArrowCursor);
     }
 
-  file_read.close();
+    e->accept();
 }
 
-MainWindow::~MainWindow()
+void CustomWindow::mousePressEvent(QMouseEvent *e)
 {
-  delete ui;
+    if (e->button() == Qt::LeftButton)
+    {
+        const auto xPos = e->pos().x();
+        const auto yPos = e->pos().y();
+
+        if (mInResizeZone)
+        {
+            mAllowResize = true;
+
+            if (yPos <= PIXELS_TO_ACT)
+            {
+                if (xPos <= PIXELS_TO_ACT)
+                    mResizeDiagTopLeft = true;
+                else if (xPos >= geometry().width() - PIXELS_TO_ACT)
+                    mResizeDiagTopRight = true;
+                else
+                    mResizeVerTop = true;
+            }
+            else if (xPos <= PIXELS_TO_ACT)
+                mResizeHorLeft = true;
+        }
+        else if (xPos >= PIXELS_TO_ACT and xPos < ui->titleBar->geometry().width()
+                 and yPos >= PIXELS_TO_ACT and yPos < ui->titleBar->geometry().height())
+        {
+            mMoveWidget = true;
+            mDragPosition = e->globalPos() - frameGeometry().topLeft();
+        }
+    }
+
+    e->accept();
 }
 
+void CustomWindow::mouseReleaseEvent(QMouseEvent *e)
+{
+    mMoveWidget = false;
+    mAllowResize = false;
+    mResizeVerTop = false;
+    mResizeHorLeft = false;
+    mResizeDiagTopLeft = false;
+    mResizeDiagTopRight = false;
 
-QString MainWindow::remove_symbols(const QString& user_entered_word)
+    e->accept();
+}
+
+void CustomWindow::mouseDoubleClickEvent(QMouseEvent *e)
+{
+    const auto tbMenuGeo = ui->tbMenu->geometry();
+    const auto titleBarGeo = ui->titleBar->geometry();
+    const auto xPos = e->pos().x();
+    const auto yPos = e->pos().y();
+
+    if (xPos < tbMenuGeo.right() and yPos < tbMenuGeo.bottom() and xPos >= tbMenuGeo.x() and yPos >= tbMenuGeo.y() and ui->tbMenu->isVisible())
+        close();
+    else if (mTitleMode != TitleMode::FullScreenMode and xPos < titleBarGeo.width() and yPos < titleBarGeo.height())
+        maximizeBtnClicked();
+
+    e->accept();
+}
+
+void CustomWindow::paintEvent (QPaintEvent *)
+{
+    QStyleOption opt;
+    opt.init (this);
+
+    QPainter p(this);
+    style()->drawPrimitive (QStyle::PE_Widget, &opt, &p, this);
+}
+
+void CustomWindow::moveWindow(QMouseEvent *e)
+{
+	if (e->buttons() & Qt::LeftButton)
+	{
+        move(e->globalPos() - mDragPosition);
+		e->accept();
+	}
+}
+
+void CustomWindow::resizeWindow(QMouseEvent *e)
+{
+    if (mAllowResize)
+	{
+        const auto cursorShape = cursor().shape();
+
+        switch (cursorShape)
+        {
+            case Qt::SizeVerCursor:
+                resizeWhenVerCursor(e->pos());
+            break;
+            case Qt::SizeHorCursor:
+                resizeWhenHorCursor(e->pos());
+            break;
+            case Qt::SizeBDiagCursor:
+                resizeWhenBDiagCursor(e->pos());
+            break;
+            case Qt::SizeFDiagCursor:
+                resizeWhenFDiagCursor(e->pos());
+            break;
+            default: break;
+        }
+
+		e->accept();
+	}
+}
+
+void CustomWindow::resizeWhenVerCursor (const QPoint &p)
+{
+    auto yMouse = p.y();
+    auto wWidth = geometry().width();
+    auto wHeight = geometry().height();
+
+    if (mResizeVerTop)
+    {
+        int newY = geometry().y() + yMouse;
+        int newHeight = wHeight - yMouse;
+
+        if (newHeight > minimumSizeHint().height())
+        {
+            resize(wWidth, newHeight);
+            move(geometry().x(), newY);
+        }
+    }
+    else
+        resize(wWidth, yMouse+1);
+}
+
+void CustomWindow::resizeWhenHorCursor (const QPoint &p)
+{
+    auto xMouse = p.x();
+    auto wWidth = geometry().width();
+    auto wHeight = geometry().height();
+
+    if (mResizeHorLeft)
+    {
+        int newX = geometry().x() + xMouse;
+        int newWidth = wWidth - xMouse;
+
+        if (newWidth > minimumSizeHint().width())
+        {
+            resize(newWidth, wHeight);
+            move(newX, geometry().y());
+        }
+    }
+    else
+        resize(xMouse, wHeight);
+}
+
+void CustomWindow::resizeWhenBDiagCursor(const QPoint &p)
+{
+    auto xMouse = p.x();
+    auto yMouse = p.y();
+    auto wWidth = geometry().width();
+    auto wHeight = geometry().height();
+    auto newX = 0;
+    auto newWidth = 0;
+    auto newY = 0;
+    auto newHeight = 0;
+
+    if (mResizeDiagTopRight)
+    {
+        newX = geometry().x();
+        newWidth = xMouse;
+        newY = geometry().y() + yMouse;
+        newHeight = wHeight - yMouse;
+    }
+    else
+    {
+        newX = geometry().x() + xMouse;
+        newWidth = wWidth - xMouse;
+        newY = geometry().y();
+        newHeight = yMouse;
+    }
+
+    if (newWidth >= minimumSizeHint().width() and newHeight >= minimumSizeHint().height())
+    {
+        resize(newWidth, newHeight);
+        move(newX, newY);
+    }
+    else if (newWidth >= minimumSizeHint().width())
+    {
+        resize(newWidth, wHeight);
+        move(newX, geometry().y());
+    }
+    else if (newHeight >= minimumSizeHint().height())
+    {
+        resize(wWidth, newHeight);
+        move(geometry().x(), newY);
+    }
+}
+
+void CustomWindow::resizeWhenFDiagCursor(const QPoint &p)
+{
+    auto xMouse = p.x();
+    auto yMouse = p.y();
+    auto geoX = geometry().x();
+    auto geoY = geometry().y();
+    auto wWidth = geometry().width();
+    auto wHeight = geometry().height();
+
+    if (mResizeDiagTopLeft)
+    {
+        int newX = geoX + xMouse;
+        int newWidth = wWidth - xMouse;
+        int newY = geoY + yMouse;
+        int newHeight = wHeight - yMouse;
+
+        if (newWidth >= minimumSizeHint().width() and newHeight >= minimumSizeHint().height())
+        {
+            resize(newWidth, newHeight);
+            move(newX, newY);
+        }
+        else if (newWidth >= minimumSizeHint().width())
+        {
+            resize(newWidth, wHeight);
+            move(newX, geoY);
+        }
+        else if (newHeight >= minimumSizeHint().height())
+        {
+            resize(wWidth, newHeight);
+            move(geoX, newY);
+        }
+    }
+    else
+        resize(xMouse+1, yMouse+1);
+}
+
+void CustomWindow::setCentralWidget(QWidget *widget, const QString &widgetName)
+{
+    //We do connect in the old fashion way since it will be decided in execution time
+    connect(widget, SIGNAL(cancelled()), this, SLOT(close()));
+
+    ui->verticalLayout->addWidget(widget);
+	ui->LTitle->setText(widgetName);
+}
+
+void CustomWindow::setTitlebarMode(const TitleMode &flag)
+{
+    mTitleMode = flag;
+
+    switch (mTitleMode)
+    {
+        case TitleMode::CleanTitle:
+            ui->tbMenu->setHidden(true);
+            ui->pbMin->setHidden(true);
+            ui->pbMax->setHidden(true);
+            ui->pbClose->setHidden(true);
+            break;
+        case TitleMode::OnlyCloseButton:
+            ui->tbMenu->setHidden(true);
+            ui->pbMin->setHidden(true);
+            ui->pbMax->setHidden(true);
+            break;
+        case TitleMode::MenuOff:
+            ui->tbMenu->setHidden(true);
+            break;
+        case TitleMode::MaxMinOff:
+            ui->pbMin->setHidden(true);
+            ui->pbMax->setHidden(true);
+            break;
+        case TitleMode::FullScreenMode:
+            ui->pbMax->setHidden(true);
+            showMaximized();
+            break;
+        case TitleMode::MaximizeModeOff:
+            ui->pbMax->setHidden(true);
+            break;
+        case TitleMode::MinimizeModeOff:
+            ui->pbMin->setHidden(true);
+            break;
+        case TitleMode::FullTitle:
+            ui->tbMenu->setVisible(true);
+            ui->pbMin->setVisible(true);
+            ui->pbMax->setVisible(true);
+            ui->pbClose->setVisible(true);
+            break;
+    }
+    ui->LTitle->setVisible(true);
+}
+
+void CustomWindow::setTitlebarMenu(QMenu *menu, const QString &icon)
+{
+    ui->tbMenu->setMenu(menu);
+    ui->tbMenu->setIcon(QIcon(icon));
+}
+
+void CustomWindow::maximizeBtnClicked()
+{
+    if (isFullScreen() or isMaximized())
+    {
+        ui->pbMax->setIcon(QIcon(":/ui/images/app_max.png"));
+        setWindowState(windowState() & ~Qt::WindowFullScreen & ~Qt::WindowMaximized);
+    }
+    else
+    {
+        ui->pbMax->setIcon(QIcon(":/ui/images/app_rest.png"));
+        setWindowState(windowState() | Qt::WindowFullScreen | Qt::WindowMaximized);
+    }
+}
+
+void CustomWindow::minimizeBtnClicked()
+{
+    if (isMinimized())
+        setWindowState(windowState() & ~Qt::WindowMinimized);
+    else
+        setWindowState(windowState() | Qt::WindowMinimized);
+}
+
+QString CustomWindow::remove_symbols(const QString& user_entered_word)
 {
   QString new_word;
 
   for (int i = 0; i < user_entered_word.size(); i++)
     {
 
-      if (((user_entered_word[i] >= 1613 && user_entered_word[i] <= 1618) || (user_entered_word[i] == 1556))  && (user_entered_word[i] != 1616 || i != user_entered_word.size() - 1) )
+      if (((user_entered_word[i] >= 1613 && user_entered_word[i] <= 1618) || (user_entered_word[i] == 1556)) && (user_entered_word[i] != 1616 || i != user_entered_word.size() - 1) )
         continue;
-
 
       new_word += user_entered_word[i];
     }
@@ -79,7 +504,7 @@ QString MainWindow::remove_symbols(const QString& user_entered_word)
 
 }
 
-QVector<QStringList> MainWindow::get_user_input()
+QVector<QStringList> CustomWindow::get_user_input()
 {
 
   auto start = std::chrono::high_resolution_clock::now();
@@ -88,7 +513,7 @@ QVector<QStringList> MainWindow::get_user_input()
 
   QString user_entered_combined_words = ui->textEdit->toPlainText();
 
-  QStringList user_entered_individual_lines = user_entered_combined_words.split("\n", QString::SkipEmptyParts);
+  QStringList user_entered_individual_lines = user_entered_combined_words.split(QRegExp("\\s*\n"), QString::SkipEmptyParts);
 
   int total_lines = user_entered_individual_lines.size();
 
@@ -113,13 +538,15 @@ QVector<QStringList> MainWindow::get_user_input()
   return user_input;
 }
 
-QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_entered_line)
+QVector<QStringList> CustomWindow::get_murrab_weight(const QStringList& user_entered_line)
 {
   auto start = std::chrono::high_resolution_clock::now();
   QVector<QStringList> words_murrabs_weights(user_entered_line.size());
 
+
   for (int i = 0; i < user_entered_line.size(); i++)
     {
+
       QString word = user_entered_line[i];
       QString last_two_letters = word;
       QString last_three_letters = word;
@@ -133,11 +560,11 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
           last_three_letters = word.mid(word.size() - 3, 3);
         }
 
-      bool found_hamza_e_izafat  = (word.back() == L'ۂ');
+      bool found_hamza_e_izafat  = (word.back() == L'ۂ' || last_two_letters == u8"ۂ" );
 
       if (found_hamza_e_izafat)
         {
-          word.chop(1);
+          word.chop( (word.back() == L'ۂ') ? 1:2 );
           word += u8"ہِ";
         }
 
@@ -184,7 +611,6 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
       bool found_gan = (word.size() > 4 && last_three_letters == u8"گان");
 
       bool found_gaan = (word.size() > 4 && last_three_letters == u8"گاں");
-
 
       bool found_hamza_yen = (word.size() > 4 && last_three_letters == u8"ئیں");
 
@@ -236,7 +662,6 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
               words_murrabs_weights[i] = dict_cache_find_iterator.value();
               words_murrabs_weights[i][0] = user_entered_line[i];
               words_murrabs_weights[i][2].chop(1);
-
             }
 
           else if (found_oun_yen) // we didn't find word after replacing nun-ghuna with nun so, seeing if the word possibly end on oun and yen and checking for word in dict after chopping these letters from user entered word
@@ -495,56 +920,7 @@ QVector<QStringList> MainWindow::get_murrab_weight(const QStringList& user_enter
   return words_murrabs_weights;
 }
 
-void MainWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_per_line)
-{
-  auto start = std::chrono::high_resolution_clock::now();
-  int size = words_murrab_weight_per_line.size();
-
-  if (size <= 0)
-    return;
-
-  ui->textEdit->insertPlainText(u8"\nتحلیلِ الفاظ: ");
-
-
-  for (int i = 0; i < size; i++)
-    {
-      if (words_murrab_weight_per_line[i].size() != 3)
-        {
-          ui->textEdit->insertHtml(u8"'<span style='color:red'>X</span>' ");
-          continue;
-        }
-
-      const QString weight = words_murrab_weight_per_line[i][2];
-
-      auto arkaan_find_iterator = Arkan_map.find(weight.toStdWString());
-
-      if (arkaan_find_iterator != Arkan_map.end())
-        {
-          const QString rukan = QString::fromStdWString(arkaan_find_iterator->second);
-
-          bool has_multiple_weights = has_different_weights(words_murrab_weight_per_line[i][0]);
-
-          if (has_multiple_weights)
-            {
-              ui->textEdit->insertHtml(u8"<span style='color:#5900b3'>" + rukan + u8"</span> ");
-            }
-          else
-            {
-              ui->textEdit->insertPlainText(rukan + " ");
-            }
-        }
-      else
-        {
-          ui->textEdit->insertHtml(u8"<span style='color:red'>'X' </span>");
-        }
-    }
-
-  std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
-
-  QTextStream(stdout) << "Displaying Arkans: " << end.count() << "\n";
-}
-
-bool MainWindow::has_different_weights(QString word)
+bool CustomWindow::has_different_weights(QString word)
 {
 
   if (word.isEmpty())
@@ -580,7 +956,7 @@ bool MainWindow::has_different_weights(QString word)
   return different_unique_weights.size() > 1;
 }
 
-QList<QString> MainWindow::get_different_weights_of_word(QString word)
+QList<QString> CustomWindow::get_different_weights_of_word(QString word)
 {
   if (word.isEmpty())
     {
@@ -614,26 +990,133 @@ QList<QString> MainWindow::get_different_weights_of_word(QString word)
   return different_unique_weights.toList();
 }
 
-QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& words_murrab_weight_per_line)
+QString accumulate(const QStringList& weights, QString seperator = "")
+{
+  QString accum;
+
+  for (int i = 0; i < weights.size(); i++)
+    {
+      accum += weights[i] + ( i == weights.size() - 1 ? "" : seperator);
+    }
+
+  return accum;
+}
+
+Accumulated_Weight islah(QVector<Accumulated_Weight>& accumulated_weights_per_line, const QString& meter)
+{
+  Accumulated_Weight* best_accumulated_weight = nullptr;
+  int min_rejected_count = INT_MAX;
+
+  std::wstring meter_bin = meter.toStdWString();
+
+
+  for (int i = 0; i < accumulated_weights_per_line.size(); i++)
+    {
+
+      Q_ASSERT(accumulated_weights_per_line[i].bin == accumulate(accumulated_weights_per_line[i].weights));
+      Q_ASSERT(accumulated_weights_per_line[i].weights.size() == accumulated_weights_per_line[i].words.size());
+      Q_ASSERT(accumulated_weights_per_line[i].words.size() == accumulated_weights_per_line[i].rejected.size());
+
+      size_t cur_loc = 0;
+
+      for (int j = 0; j < accumulated_weights_per_line[i].weights.size(); j++)
+        {
+
+          std::wstring cur_weight = accumulated_weights_per_line[i].weights[j].toStdWString();
+
+          size_t find_loc = meter_bin.find(cur_weight, cur_loc);
+
+          if (find_loc != cur_loc)
+            {
+              accumulated_weights_per_line[i].rejected[j] = true;
+              accumulated_weights_per_line[i].rejected_count++;
+            }
+
+          cur_loc += cur_weight.size();
+
+        }
+
+      if (!accumulated_weights_per_line[i].rejected.empty() && meter_bin.size() > cur_loc)
+        {
+          accumulated_weights_per_line[i].rejected.back() = true;
+          accumulated_weights_per_line[i].rejected_count++;
+        }
+
+      if (accumulated_weights_per_line[i].rejected_count != 0)
+        {
+          accumulated_weights_per_line[i].has_meter = false;
+        }
+
+      if (accumulated_weights_per_line[i].rejected_count < min_rejected_count)
+        {
+          best_accumulated_weight = &accumulated_weights_per_line[i];
+          min_rejected_count = accumulated_weights_per_line[i].rejected_count;
+        }
+    }
+
+  return (best_accumulated_weight  ? *best_accumulated_weight : Accumulated_Weight());
+}
+
+QStringList get_matched_meters(QVector<Accumulated_Weight>& accumulated_weights)
+{
+  QStringList meters;
+
+  for (int i = 0; i < accumulated_weights.size(); i++)
+    {
+
+      if(!accumulated_weights[i].bin.isEmpty() && accumulated_weights[i].bin.back()=='1')
+        {
+          accumulated_weights[i].bin.chop(1);
+          accumulated_weights[i].weights.back().chop(1);
+          accumulated_weights[i].is_tasbeegh_o_azala = true;
+        }
+
+      QString accumlated_weights = accumulate(accumulated_weights[i].weights);
+
+      auto meter_find_iterator = Meter_map.find(accumulated_weights[i].bin.toStdWString());
+
+      if (meter_find_iterator != Meter_map.end())
+        {
+          meters.push_back(QString::fromStdWString(meter_find_iterator->first));
+
+          if(accumulated_weights.size() >= 2)
+            {
+              if(accumulated_weights[i].bin.back() == L'1')
+                accumulated_weights[i].is_tasbeegh_o_azala = true;
+            }
+
+        };
+    }
+
+  return meters;
+}
+
+QVector<Accumulated_Weight> CustomWindow::get_accumulated_weight(const QVector<QStringList>& words_murrab_weight_per_line)
 {
   auto start = std::chrono::high_resolution_clock::now();
 
   int size = words_murrab_weight_per_line.size();
 
   if(size <= 0)
-    return QVector<QString>();
+    return QVector<Accumulated_Weight>();
 
-  QVector<QString> accumulated_weights(1); // There will always be one accumulated weight
+  QVector<Accumulated_Weight> accumulated_weights(1, {}); // There will always be one accumulated weight
 
   QChar prev_word_last_letter;
 
   int new_accumulated_weight_size = accumulated_weights.size();
   int prev_accumulated_weight_size = new_accumulated_weight_size;
 
+  bool has_word_not_present_in_dict = false;
+
   for (int i = 0; i < size; i++) // Iterating every word
     {
 
-      if (words_murrab_weight_per_line[i].size() != 3) continue;
+      if (words_murrab_weight_per_line[i].size() != 3)
+        {
+          has_word_not_present_in_dict = true;
+          continue;
+        }
 
       QString individual_word = words_murrab_weight_per_line[i][0];
       QString last_two_letters = individual_word;
@@ -658,12 +1141,17 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
       if (!has_multiple_weights)
         {
-          for (int j = 0; j < accumulated_weights.size(); j++)
+            for (int j = 0; j < accumulated_weights.size(); j++)
             {
               if (individual_word == u8"و")
                 break;
 
-              accumulated_weights[j] += individual_weight;
+              accumulated_weights[j].bin += individual_weight;
+              accumulated_weights[j].words.push_back(individual_word);
+              accumulated_weights[j].weights.push_back(individual_weight);
+              accumulated_weights[j].rejected.push_back(false);
+
+              Q_ASSERT(accumulated_weights[j].bin == accumulate(accumulated_weights[j].weights));
             }
         }
 
@@ -683,16 +1171,36 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
             {
               if (i == 0)
                 {
-                  accumulated_weights.push_back(weight);
+                  Accumulated_Weight new_acc_weight;
+                  new_acc_weight.bin = weight;
+                  new_acc_weight.words.push_back(individual_word);
+                  new_acc_weight.weights.push_back(weight);
+                  new_acc_weight.rejected.push_back(false);
+
+                  accumulated_weights.push_back(new_acc_weight);
+
+                  Q_ASSERT(new_acc_weight.bin == accumulate(new_acc_weight.weights));
 
                   new_accumulated_weight_size++;
                 }
-
               else
                 {
                   for (int k = 0; k < prev_accumulated_weight_size; k++)
                     {
-                      accumulated_weights.push_back(accumulated_weights[k] + weight);
+                      Accumulated_Weight new_acc_weight;
+                      new_acc_weight.bin = accumulated_weights[k].bin + weight;
+                      new_acc_weight.weights = accumulated_weights[k].weights;
+                      new_acc_weight.words = accumulated_weights[k].words;
+                      new_acc_weight.rejected = accumulated_weights[k].rejected;
+
+                      new_acc_weight.weights.push_back(weight);
+                      new_acc_weight.words.push_back(individual_word);
+                      new_acc_weight.rejected.push_back(false);
+
+                      accumulated_weights.push_back(new_acc_weight);
+
+
+                      Q_ASSERT(new_acc_weight.bin == accumulate(new_acc_weight.weights));
 
                       new_accumulated_weight_size++;
                     }
@@ -711,27 +1219,34 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
       if (i != 0  && (prev_word_last_letter != L'ا' && prev_word_last_letter != L'ہ' && prev_word_last_letter != L'ۂ' &&
                       prev_word_last_letter != L'ے' && prev_word_last_letter != L'ؤ' && prev_word_last_letter != L'ں'))
         {
+
           if (first_letter == L'ا')
             {
               for (int k = 0; k < prev_accumulated_weight_size; k++)
                 {
-
-                  QString new_accumulated_weight = accumulated_weights[k];
-
-                  if (accumulated_weights[k].size() - individual_weight.size() - 1  >= 0)
+                  if (accumulated_weights[k].bin.size() - accumulated_weights[k].weights.back().size() - 1 >= 0)
                     {
-                      new_accumulated_weight[accumulated_weights[k].size() - individual_weight.size() - 1] = '1';
-                      new_accumulated_weight.remove(accumulated_weights[k].size() - individual_weight.size(), 1);
-                    }
+                  Accumulated_Weight new_accumulated_weight;
+
+                  new_accumulated_weight.bin = accumulated_weights[k].bin;
+
+                  new_accumulated_weight.bin[accumulated_weights[k].bin.size() - accumulated_weights[k].weights.back().size() - 1] = L'1';
+                  new_accumulated_weight.bin.remove(accumulated_weights[k].bin.size() - accumulated_weights[k].weights.back().size(), 1);
+
+                  new_accumulated_weight.weights = accumulated_weights[k].weights;
+                  new_accumulated_weight.words = accumulated_weights[k].words;
+                  new_accumulated_weight.rejected = accumulated_weights[k].rejected;
+
+                  new_accumulated_weight.weights[new_accumulated_weight.weights.size() - 2].back() = L'1';
+                  new_accumulated_weight.weights.back().remove(0, 1);
+
                   accumulated_weights.push_back(new_accumulated_weight);
 
+                  Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
                   new_accumulated_weight_size++;
-
+                  }
                 }
-//              accumulated_weights.pop_front();
-//              --new_accumulated_weight_size;
 
-              prev_accumulated_weight_size = new_accumulated_weight_size;
             }
 
           else if (first_letter == L'آ')
@@ -739,22 +1254,31 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
               for (int k = 0; k < prev_accumulated_weight_size; k++)
                 {
 
-                  QString new_accumulated_weight = accumulated_weights[k];
-
-                  if (accumulated_weights[k].size() - individual_weight.size() - 1 >= 0)
+                  if (accumulated_weights[k].bin.size() - accumulated_weights[k].weights.back().size() - 1 >= 0)
                     {
-                      new_accumulated_weight[accumulated_weights[k].size() - individual_weight.size() - 1] = '1';
-                      new_accumulated_weight[accumulated_weights[k].size() - individual_weight.size() + 1] = '0';
-                      new_accumulated_weight.remove(accumulated_weights[k].size() - individual_weight.size(), 1);
-                    }
+                  Accumulated_Weight new_accumulated_weight;
+
+                  new_accumulated_weight.bin = accumulated_weights[k].bin;
+
+                  new_accumulated_weight.bin[accumulated_weights[k].bin.size() - accumulated_weights[k].weights.back().size() - 1] = L'1';
+                  new_accumulated_weight.bin[accumulated_weights[k].bin.size() - accumulated_weights[k].weights.back().size() + 1] = L'0';
+                  new_accumulated_weight.bin.remove(accumulated_weights[k].bin.size() - accumulated_weights[k].weights.back().size(), 1);
+
+                  new_accumulated_weight.weights = accumulated_weights[k].weights;
+                  new_accumulated_weight.words = accumulated_weights[k].words;
+                  new_accumulated_weight.rejected = accumulated_weights[k].rejected;
+
+                  new_accumulated_weight.weights[new_accumulated_weight.weights.size() - 2].back() = L'1';
+                  new_accumulated_weight.weights.back().remove(0, 1);
+                  new_accumulated_weight.weights.back().front() = L'0';
 
                   accumulated_weights.push_back(new_accumulated_weight);
 
-                  new_accumulated_weight_size++;
+                  Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
+                  new_accumulated_weight_size++;
+                    }
                 }
-//              accumulated_weights.pop_front();
-//              --new_accumulated_weight_size;
             }
 
           prev_accumulated_weight_size = new_accumulated_weight_size;
@@ -766,63 +1290,106 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
           for (int k = 0; k < prev_accumulated_weight_size; k++)
             {
 
-              accumulated_weights[k] += L'1';
+              accumulated_weights[k].bin += L'1';
+              accumulated_weights[k].weights.back() += L'1';
 
-              QString new_accumulated_weight_one = accumulated_weights[k] + L'0';
+              Accumulated_Weight new_accumulated_weight_one;
+              new_accumulated_weight_one.bin = accumulated_weights[k].bin + L'0';
+              new_accumulated_weight_one.weights = accumulated_weights[k].weights;
+              new_accumulated_weight_one.words = accumulated_weights[k].words;
+              new_accumulated_weight_one.rejected = accumulated_weights[k].rejected;
+
+              new_accumulated_weight_one.weights.back() += L'0';
 
               if (last_three_letters== u8"وئے")
                 {
-                  QString new_accumulated_weight_two = accumulated_weights[k];
-                  new_accumulated_weight_two.chop(1);
-                  new_accumulated_weight_two.back() = L'1';
+                  Accumulated_Weight new_accumulated_weight_two;
+                  new_accumulated_weight_two.bin = accumulated_weights[k].bin;
+                  new_accumulated_weight_two.weights = accumulated_weights[k].weights;
+                  new_accumulated_weight_two.words = accumulated_weights[k].words;
+                  new_accumulated_weight_two.rejected = accumulated_weights[k].rejected;
 
-                  QString new_accumulated_weight_three = new_accumulated_weight_two;
-                  new_accumulated_weight_three += L'0';
+                  new_accumulated_weight_two.bin.chop(1);
+                  new_accumulated_weight_two.bin.back() = L'1';
+
+                  new_accumulated_weight_two.weights.back().chop(1);
+                  new_accumulated_weight_two.weights.back().back() = L'1';
+
+                  Accumulated_Weight new_accumulated_weight_three;
+                  new_accumulated_weight_three.bin = new_accumulated_weight_two.bin;
+                  new_accumulated_weight_three.weights = new_accumulated_weight_two.weights;
+                  new_accumulated_weight_three.words = new_accumulated_weight_two.words;
+                  new_accumulated_weight_three.rejected = new_accumulated_weight_two.rejected;
+
+                  new_accumulated_weight_three.bin += L'0';
+                  new_accumulated_weight_three.weights.back() += L'0';
 
                   accumulated_weights.push_back(new_accumulated_weight_two);
                   accumulated_weights.push_back(new_accumulated_weight_three);
+
+                  Q_ASSERT(new_accumulated_weight_two.bin == accumulate(new_accumulated_weight_two.weights));
+                  Q_ASSERT(new_accumulated_weight_three.bin == accumulate(new_accumulated_weight_three.weights));
 
                   new_accumulated_weight_size += 2;
                 }
 
               accumulated_weights.push_back(new_accumulated_weight_one);
 
+              Q_ASSERT(new_accumulated_weight_one.bin == accumulate(new_accumulated_weight_one.weights));
+
               new_accumulated_weight_size++;
             }
         }
 
-      else if(last_letter == L'ِ' || last_letter == L'ۂ')
+      else if(last_letter == L'ِ' || last_letter == L'ۂ' || last_two_letters == u8"ۂ")
         {
           for (int k = 0; k < prev_accumulated_weight_size; k++)
             {
-              accumulated_weights[k].back() = '1';
+              accumulated_weights[k].bin.back() = L'1';
+              accumulated_weights[k].weights.back().back() = L'1';
 
-              QString new_accumulated_weight = accumulated_weights[k];
+              Accumulated_Weight new_accumulated_weight;
 
-              new_accumulated_weight += '0';
+              new_accumulated_weight.bin = accumulated_weights[k].bin + L'0';
+              new_accumulated_weight.weights = accumulated_weights[k].weights;
+              new_accumulated_weight.words = accumulated_weights[k].words;
+              new_accumulated_weight.rejected = accumulated_weights[k].rejected;
+
+              new_accumulated_weight.weights.back() += L'0';
 
               accumulated_weights.push_back(new_accumulated_weight);
+
+              Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
               new_accumulated_weight_size++;
             }
         }
 
-      else if (individual_word.size() > 1 && individual_word != u8"اے" && last_weight != L'1' && (last_letter == L'ا' || last_letter == L'ہ' ||
-                                                                                                  last_letter == L'ی' || last_letter == L'ے' ||
-                                                                                                  last_letter == L'و' || last_letter == L'ؤ' )){
+      else if (individual_word.size() > 2 && last_weight != L'1' && (i != size - 1 && last_letter != L'ؤ') && (last_letter == L'ا' || last_letter == L'ہ' ||
+                                                                                                        last_letter == L'ی' || last_letter == L'ے' ||
+                                                                                                        last_letter == L'و' || last_letter == L'ؤ' )){
           for (int k = 0; k < prev_accumulated_weight_size; k++)
             {
-              QString new_accumulated_weight = accumulated_weights[k];
-              new_accumulated_weight.chop(1);
+              Accumulated_Weight new_accumulated_weight;
+
+              new_accumulated_weight.bin = accumulated_weights[k].bin;
+              new_accumulated_weight.weights = accumulated_weights[k].weights;
+              new_accumulated_weight.words = accumulated_weights[k].words;
+              new_accumulated_weight.rejected = accumulated_weights[k].rejected;
+
+              new_accumulated_weight.bin.chop(1);
+              new_accumulated_weight.weights.back().chop(1);
 
               accumulated_weights.push_back(new_accumulated_weight);
+
+              Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
               new_accumulated_weight_size++;
             }
 
         }
 
-      else if (individual_word == u8"و" || ((individual_word.size() > 3 && ((last_two_letters  == u8"یں" && last_three_letters != u8"ئیں")|| last_two_letters == u8"وں")) && dict_cache.find(individual_word) == dict_cache.end() && dict_cache.find(individual_word + u8"ن") == dict_cache.end()))
+      else if (individual_word == u8"و" || ((individual_word.size() > 3 && ((last_two_letters  == u8"یں" && last_three_letters != u8"ئیں")|| last_two_letters == u8"وں")) && dict_cache.find(individual_word) == dict_cache.end()))
         {
           for (int k = 0; k < prev_accumulated_weight_size; k++)
             {
@@ -830,23 +1397,45 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
               //                {
               if(prev_word_last_letter ==L'ی' && individual_word == u8"و")
                 {
-                  accumulated_weights[k]+= u8"1";
-                  QString new_accumulated_weight = accumulated_weights[k] + u8"0";
-                  QString new_accumulated_weight2 = accumulated_weights[k];
-                  new_accumulated_weight2.chop(1);
-                  new_accumulated_weight2+= u8"1";
-                  QString new_accumulated_weight3 = new_accumulated_weight2 + u8"0";
+                  accumulated_weights[k].bin += L'1';
+                  accumulated_weights[k].weights.back() += L'1';
+
+                  Accumulated_Weight new_accumulated_weight = accumulated_weights[k];
+                  new_accumulated_weight.bin += L'0';
+                  new_accumulated_weight.weights.back() += L'0';
+
+                  Accumulated_Weight new_accumulated_weight2 = accumulated_weights[k];
+                  new_accumulated_weight2.bin.chop(1);
+                  new_accumulated_weight2.weights.back().chop(1);
+                  new_accumulated_weight.bin += L'1';
+                  new_accumulated_weight.weights.back() += L'1';
+
+                  Accumulated_Weight new_accumulated_weight3 = new_accumulated_weight2;
+                  new_accumulated_weight3.bin += L'1';
+                  new_accumulated_weight3.words.back() += L'1';
+
+                  Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+                  Q_ASSERT(new_accumulated_weight2.bin == accumulate(new_accumulated_weight2.weights));
+                  Q_ASSERT(new_accumulated_weight3.bin == accumulate(new_accumulated_weight3.weights));
+
                   accumulated_weights.push_back(new_accumulated_weight);
                   accumulated_weights.push_back(new_accumulated_weight2);
                   accumulated_weights.push_back(new_accumulated_weight3);
+
                   new_accumulated_weight_size += 3;
                 }
-              else {
 
+              else
+                {
+                  accumulated_weights[k].bin.back() = L'1';
+                  accumulated_weights[k].weights.back().back() = L'1';
 
-                  accumulated_weights[k].back() = '1';
+                  Accumulated_Weight  new_accumulated_weight = accumulated_weights[k];
 
-                  QString new_accumulated_weight = accumulated_weights[k] + '0';
+                  new_accumulated_weight.bin += L'0';
+                  new_accumulated_weight.weights.back() += L'0';
+
+                  Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
                   accumulated_weights.push_back(new_accumulated_weight);
 
@@ -854,15 +1443,6 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
                 }
 
             }
-          //              else
-          //                 {
-          //                  accumulated_weights[k] += '0';
-          //                  QString new_accumulated_weight1 = accumulated_weights[k] + "10";
-          //                  accumulated_weights.push_back(new_accumulated_weight1);
-
-          //                  new_accumulated_weight_size++;
-          //                }
-          //            }
         }
 
       else if (((individual_word.size() > 3 && last_two_letters == u8"ؤں")
@@ -872,15 +1452,25 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
           QString chopped_individual_word = individual_word.chopped((last_two_letters == u8"ؤں") ? 2:3 );
 
-          if (chopped_individual_word.back() == L'ا' || chopped_individual_word.back() == L'و')
+          if (chopped_individual_word.back() == L'ا')
             {
               for (int k = 0; k < prev_accumulated_weight_size; k++)
                 {
-                  accumulated_weights[k] += L'1';
 
-                  QString new_accumulated_weight = accumulated_weights[k] + L'0';
+                  accumulated_weights[k].bin += L'1';
+                  accumulated_weights[k].weights.back() += L'1';
+
+                  Accumulated_Weight new_accumulated_weight;
+                  new_accumulated_weight.bin = accumulated_weights[k].bin + L'0';
+                  new_accumulated_weight.weights = accumulated_weights[k].weights;
+                  new_accumulated_weight.words = accumulated_weights[k].words;
+                  new_accumulated_weight.rejected = accumulated_weights[k].rejected;
+
+                  new_accumulated_weight.weights.back() += L'0';
 
                   accumulated_weights.push_back(new_accumulated_weight);
+
+                  Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
                   new_accumulated_weight_size++;
                 }
@@ -898,10 +1488,18 @@ QVector<QString> MainWindow::get_accumulated_weight(const QVector<QStringList>& 
 
   QTextStream(stdout) << "Fetching Accumulative Weight: " << end.count() << "\n";
 
+  if (has_word_not_present_in_dict)
+    {
+      for (int i = 0; i < accumulated_weights.size(); i++)
+        {
+          accumulated_weights[i].has_meter = false;
+        }
+    }
+
   return accumulated_weights;
 }
 
-void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_per_line)
+void CustomWindow::display_meters(const QVector<QStringList>& words_murrab_weight_per_line)
 {
   auto start = std::chrono::high_resolution_clock::now();
 
@@ -917,39 +1515,44 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
 
 
 
+  //  for(auto&i: Meters_in_Decimal)
+  //  {
+  //    meter_vector.push_back(i.first);
+  //  }
+  //   std::sort(meter_vector.begin(),meter_vector.end());
 
   if(size <= 0)
     {
       return;
     }
 
-  QVector<QString> accumulated_weights = get_accumulated_weight(words_murrab_weight_per_line);
+  QVector<Accumulated_Weight> accumulated_weights = get_accumulated_weight(words_murrab_weight_per_line);
   bool tasbeegh_o_azala = false;
   QString add_weight ="";
   bool found_meter = false;
 
-  ui->textEdit->insertPlainText(u8"\nافاعیل: ");
+  ui->textEdit->insertPlainText(u8"\n\nافاعیل: ");
   int index = 0;
 
 
   for (int i = 0; i < accumulated_weights.size(); i++)
     {
       tasbeegh_o_azala = false;
-      if(!accumulated_weights[i].isEmpty() && accumulated_weights[i].back()=='1')
+      if(!accumulated_weights[i].bin.isEmpty() && accumulated_weights[i].bin.back()=='1')
         {
-          accumulated_weights[i].chop(1);
+          accumulated_weights[i].bin.chop(1);
           tasbeegh_o_azala = true;
         }
 
       index = i;
 
-      auto meters_find_iterator = Meter_map.find(accumulated_weights[i].toStdWString());
+      auto meters_find_iterator = Meter_map.find(accumulated_weights[i].bin.toStdWString());
       if (meters_find_iterator != Meter_map.end())
         {
           QString meter_value = QString::fromStdWString(meters_find_iterator->second);
           if(accumulated_weights.size()>= 2)
             {
-              if(accumulated_weights[i].back() == L'1')
+              if(accumulated_weights[i].bin.back() == L'1')
                 tasbeegh_o_azala = true;
             }
           if(tasbeegh_o_azala)
@@ -957,7 +1560,7 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
               meter_value.insert(meter_value.size()-1,L'ا');
               add_weight = "1";
             }
-          ui->textEdit->insertPlainText(meter_value + " " +"(" + accumulated_weights[i]+ add_weight + ")");
+          ui->textEdit->insertPlainText(meter_value + " " +"(" + accumulated_weights[i].bin + add_weight + ")");
           found_meter = true;
 
           break;
@@ -992,7 +1595,8 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
             {
 
               // size_t value = levenshteinSSE::levenshtein(j.first,accumulated_weights[i].toStdWString());
-              unsigned int value = levenshteinDist(j.first,accumulated_weights[i].toStdWString());
+              unsigned int value = levenshteinDist(j.first,accumulated_weights[i].bin.toStdWString());
+
               if( value<distance || count ==0)
                 {
                   distance=value;
@@ -1008,9 +1612,9 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
         {
 
           QString meter_value = QString::fromStdWString(meters_find_iterator->second);
-          QString original_weight = accumulated_weights[closest_meter_index];
+          Accumulated_Weight original_weight = accumulated_weights[closest_meter_index];
 
-          ui->textEdit->insertHtml(u8"<span style='color:red'>  کوئی مانوس بحر نہیں مل سکی </span>| ");
+          ui->textEdit->insertHtml(u8"<span style='color:red'> کوئی مانوس بحر نہیں مل سکی </span> ");
           ui->textEdit->insertPlainText("\n");
           ui->textEdit->insertHtml(u8"<span style= 'color:#5900b3'> نزدیک ترین بحر کے ارکان : </span>");
           ui->textEdit->insertHtml(u8"<span style= 'color:black'></span>"+ meter_value);
@@ -1064,7 +1668,7 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
 
 
 
-  auto meters_find_iterator = Names_map.find(accumulated_weights[index].toStdWString());
+  auto meters_find_iterator = Names_map.find(accumulated_weights[index].bin.toStdWString());
 
   if (meters_find_iterator != Names_map.end())
     {
@@ -1073,7 +1677,7 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
       QString additional_zuhaf = "";
       if(tasbeegh_o_azala)
         {
-          QString rukn = accumulated_weights[index].mid(accumulated_weights[index].size()-4,4);
+          QString rukn = accumulated_weights[index].bin.mid(accumulated_weights[index].bin.size()-4,4);
           if(rukn== u8"0110" && !name_value.contains(u8"مذال"))
             {
               additional_zuhaf = u8"مذال";
@@ -1109,47 +1713,340 @@ void MainWindow::display_meters(const QVector<QStringList>& words_murrab_weight_
   QTextStream(stdout) << "Displaying Names: " << end.count() << "\n";
 }
 
+void CustomWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_per_line)
+{
+  auto start = std::chrono::high_resolution_clock::now();
+  int size = words_murrab_weight_per_line.size();
+
+  if (size <= 0)
+    return;
+
+  ui->textEdit->insertPlainText(u8"\nتحلیلِ الفاظ: ");
 
 
+  for (int i = 0; i < size; i++)
+    {
+      if (words_murrab_weight_per_line[i].size() != 3)
+        {
+          ui->textEdit->insertHtml(u8"<span style='color:red'>٭</span> ");
+          continue;
+        }
 
-void MainWindow::on_pushButton_clicked()
+      const QString weight = words_murrab_weight_per_line[i][2];
+
+      auto arkaan_find_iterator = Arkan_map.find(weight.toStdWString());
+
+      if (arkaan_find_iterator != Arkan_map.end())
+        {
+          const QString rukan = QString::fromStdWString(arkaan_find_iterator->second);
+
+          bool has_multiple_weights = has_different_weights(words_murrab_weight_per_line[i][0]);
+
+          if (has_multiple_weights)
+            {
+              ui->textEdit->insertHtml(u8"<span style='color:#5900b3'>" + rukan + u8"</span> ");
+            }
+          else
+            {
+              ui->textEdit->insertPlainText(rukan + " ");
+            }
+        }
+      else
+        {
+          ui->textEdit->insertHtml(u8"<span style='color:red'>٭</span> ");
+        }
+    }
+
+  std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
+
+  QTextStream(stdout) << "Displaying Arkans: " << end.count() << "\n";
+}
+
+QString get_closest_meter(const QVector<QVector<Accumulated_Weight>>& accumulated_weights_all_lines)
 {
 
-  auto start = std::chrono::high_resolution_clock::now();
+  QMap<QString, int> closest_meter_counts;
 
+  int max_count = INT_MIN;
+  QString max_closest_meter;
 
+  for (auto&accumulated_weights : accumulated_weights_all_lines )
+    {
+      QString closest_meter;
+
+      unsigned int distance = 0;
+      int count = 0;
+
+      for(auto&i : accumulated_weights)
+        {
+
+          for(auto&j: Meter_map)
+            {
+
+              unsigned int value = levenshteinDist(j.first,i.bin.toStdWString());
+              if( value<distance || count ==0)
+                {
+                  distance=value;
+                  closest_meter = QString::fromStdWString(j.first);
+
+                  closest_meter_counts[closest_meter]++;
+
+                  ++count;
+                }
+            }
+        }
+    }
+
+  for (auto it = closest_meter_counts.begin(); it != closest_meter_counts.end(); it++)
+    {
+      if (it.value() > max_count)
+        {
+          max_count = it.value();
+          max_closest_meter = it.key();
+        }
+    }
+
+  return max_closest_meter;
+}
+
+QString max_count_meter(const QVector<QStringList>& found_meters, QVector<QVector<Accumulated_Weight>>& accumulated_weights_all_lines)
+{
+  QMap<QString, int> meters_count_in_line;
+  QString max_meter;
+  int count = 0;
+
+  for (int i = 0; i < found_meters.size(); i++)
+    {
+      for (int j = 0; j < found_meters[i].size(); j++)
+        {
+          meters_count_in_line[found_meters[i][j]]++;
+        }
+    }
+
+  for (auto it = meters_count_in_line.begin(); it != meters_count_in_line.end(); it++)
+    {
+      if (it.value() > count)
+        {
+          count = it.value();
+          max_meter = it.key();
+        }
+    }
+
+  if (count == 0)
+    {
+      QString closest_meter = get_closest_meter(accumulated_weights_all_lines);/*"1101010110101011010101101010";  //  ہزج مثمن سالم | مفاعیلن مفاعیلن مفاعیلن مفاعیلن*/
+      max_meter = closest_meter;
+    }
+
+  return max_meter;
+}
+
+QStringList CustomWindow::get_unrecognized_words(const QStringList& user_entered_line, const QVector<QStringList>& words_murrabs_weight_per_line)
+{
+  QStringList unrecognized_words;
+
+  for (int i = 0; i < words_murrabs_weight_per_line.size(); i++)
+    {
+      if (words_murrabs_weight_per_line[i].size() != 3)
+        {
+          unrecognized_words.push_back(user_entered_line[i]);
+        }
+    }
+
+  return unrecognized_words;
+}
+void CustomWindow::execute_taqti_program()
+{
   QVector<QStringList> user_entered_lines = get_user_input();
 
   QVector<QStringList> words_murrabs_weights_per_line = {};
+
   ui->textEdit->clear();
+  ui->textEdit->setHtml(textedit_html);
+
   for (auto& line: user_entered_lines)
     {
-
       for(auto& i:line)
         {
-
           ui->textEdit->insertPlainText(i);
           ui->textEdit->insertPlainText(" ");
         }
+
       words_murrabs_weights_per_line = get_murrab_weight(line);
       display_meters(words_murrabs_weights_per_line);
       display_arkans(words_murrabs_weights_per_line);
+
       if(user_entered_lines.size()>1 && line!=user_entered_lines.back())
         {
           ui->textEdit->insertPlainText("\n\n");
         }
 
     }
-
-  std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
-
-  QTextStream(stdout) << "Time elapsed: " << end.count() << "\n ---------------------------- \n";
 }
 
-
-void MainWindow::on_pushButton_2_clicked()
+void CustomWindow::execute_islah_program()
 {
+  QVector<QVector<Accumulated_Weight>> accumulated_weights;
+
+  QVector<QStringList> user_entered_lines = get_user_input();
+
+  QVector<QStringList> words_murrabs_weights_per_line = {};
+
+  QVector<QVector<QStringList>> words_murrabs_weights_all_lines;
+
+  QVector<QStringList> all_matched_meters;
+
+
+  for (auto& line: user_entered_lines)
+    {
+
+      words_murrabs_weights_per_line = get_murrab_weight(line);
+
+      accumulated_weights.push_back(get_accumulated_weight(words_murrabs_weights_per_line));
+
+      words_murrabs_weights_all_lines.push_back(words_murrabs_weights_per_line);
+
+      if (!accumulated_weights.isEmpty() && !accumulated_weights.back().isEmpty() && accumulated_weights.back().back().has_meter)
+        all_matched_meters.push_back(get_matched_meters(accumulated_weights.back()));
+    }
 
   ui->textEdit->clear();
+  ui->textEdit->setHtml(textedit_html);
+
+  QString most_matched_meter;
+
+  if (!accumulated_weights.isEmpty())
+    most_matched_meter = max_count_meter(all_matched_meters, accumulated_weights);
+
+  bool has_a_valid_verse = false;
+
+  for (int i = 0; i < user_entered_lines.size(); i++)
+    {
+      ui->textEdit->insertPlainText("\n");
+
+      if (accumulated_weights[i].isEmpty() || !accumulated_weights[i].back().has_meter)
+        {
+         ui->textEdit->insertHtml( accumulate(user_entered_lines[i], " ") + u8"<br/> ");
+
+         QStringList unrecognized_words = get_unrecognized_words(user_entered_lines[i], words_murrabs_weights_all_lines[i]);
+
+         for (int i = 0; i < unrecognized_words.size(); i++)
+           {
+             if (i != 0) ui->textEdit->insertPlainText(u8"،");
+
+              ui->textEdit->insertPlainText(unrecognized_words[i]);
+           }
+
+         ui->textEdit->insertPlainText(": ");
+
+         QString errorMessage = u8"ان الفاظ کی شناخت نہ کی جا سکی";
+
+         ui->textEdit->insertHtml(u8"<span style='color:red'>" + errorMessage + u8"</span> ");
+
+         display_arkans(words_murrabs_weights_all_lines[i]);
+
+         ui->textEdit->insertPlainText("\n");
+
+         continue;
+        }
+
+      Accumulated_Weight aw = islah(accumulated_weights[i], most_matched_meter);
+
+      for (int j = 0; j < aw.weights.size(); j++)
+        {
+          if (aw.rejected[j])
+            {
+              ui->textEdit->insertHtml(u8"<span style='color:red'>" + aw.words[j] + u8"</span> ");
+            }
+          else
+            {
+              ui->textEdit->insertHtml(u8"<span style='color:#2e7d32 '>" + aw.words[j] + u8"</span> ");
+            }
+        }
+
+      ui->textEdit->insertPlainText("\n");
+
+      for (int j = aw.weights.size() - 1; j >= 0; j--)
+        {
+          if (aw.rejected[j])
+            {
+              ui->textEdit->insertHtml(u8"<span style='color:red'>" + aw.weights[j] + u8"</span> ");
+            }
+          else
+            {
+              ui->textEdit->insertHtml(u8"<span style='color:#009688'>" +  aw.weights[j] + u8"</span> ");
+            }
+        }
+      display_arkans(words_murrabs_weights_all_lines[i]);
+
+      ui->textEdit->insertPlainText("\n");
+
+
+      if (!has_a_valid_verse) has_a_valid_verse = true;
+    }
+
+  auto it = Names_map.find(most_matched_meter.toStdWString());
+  auto it2 = Meter_map.find(most_matched_meter.toStdWString());
+
+  if (has_a_valid_verse)
+  {
+      ui->textEdit->insertPlainText(u8"\n اشعار کا موازنہ اس بحر سے کیا گیا ہے:  " );
+    ui->textEdit->insertHtml(u8"<span style='color:#ad1457'>" + ((it != Names_map.end()) ? (QString::fromStdWString(it->second) +u8"</span> " + " (" + u8"<span style='color:#ff0066  '>" + QString::fromStdWString(it2->second) + u8"</span> "+  ")" ): ""));
+
+  }
+  ui->textEdit->moveCursor(QTextCursor::Start);
 
 }
+
+void CustomWindow::on_pushButton_clicked()
+{
+    auto start = std::chrono::high_resolution_clock::now();
+
+    if (mode == ProgramMode::TAQTI)
+      {
+        execute_taqti_program();
+      }
+    else if (mode == ProgramMode::ISLAH)
+      {
+        execute_islah_program();
+      }
+
+    std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
+
+    QTextStream(stdout) << "Time elapsed: " << end.count() << "\n ---------------------------- \n";
+}
+
+void CustomWindow::on_pushButton_2_clicked()
+{
+  ui->textEdit->clear();
+  ui->textEdit->setHtml(textedit_html);
+}
+
+void CustomWindow::on_taqtiButton_clicked()
+{
+  if (mode == ProgramMode::ISLAH)
+    {
+      prev_islah_text = ui->textEdit->toHtml();
+      ui->textEdit->setHtml(prev_taqti_text);
+    }
+
+  mode = ProgramMode::TAQTI;
+  ui->taqtiButton->setStyleSheet(taqti_but_stylesheet + "background-color: #b0bec5 ");
+  ui->islahButton->setStyleSheet(islah_but_stylesheet + "font-weight: normal; border-bottom: none;");
+
+}
+
+void CustomWindow::on_islahButton_clicked()
+{
+  if (mode == ProgramMode::TAQTI)
+    {
+      prev_taqti_text = ui->textEdit->toHtml();
+      ui->textEdit->setHtml(prev_islah_text);
+    }
+
+  mode = ProgramMode::ISLAH;
+
+  ui->islahButton->setStyleSheet(islah_but_stylesheet + "background-color: #b0bec5 ;");
+  ui->taqtiButton->setStyleSheet(taqti_but_stylesheet + "font-weight: normal; border-bottom: none;");
+}
+

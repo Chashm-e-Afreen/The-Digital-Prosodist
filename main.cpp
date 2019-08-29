@@ -1,11 +1,12 @@
-#include "mainwindow.h"
 #include <QApplication>
+#include "CustomWindow.h"
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
+    QApplication app(argc,argv);
 
-    return a.exec();
+    CustomWindow *myWindow = new CustomWindow();
+    myWindow->show();
+
+    return app.exec();
 }
