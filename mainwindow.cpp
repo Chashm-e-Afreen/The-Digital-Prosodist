@@ -1013,7 +1013,7 @@ QVector<Accumulated_Weight> MainWindow::get_accumulated_weight(const QVector<QSt
 
                   Accumulated_Weight new_accumulated_weight3 = new_accumulated_weight2;
                   new_accumulated_weight3.bin += L'1';
-                  new_accumulated_weight3.words.back() += L'1';
+                  new_accumulated_weight3.weights.back() += L'1';
 
                   Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
                   Q_ASSERT(new_accumulated_weight2.bin == accumulate(new_accumulated_weight2.weights));
