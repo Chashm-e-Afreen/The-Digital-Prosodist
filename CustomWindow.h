@@ -1,4 +1,4 @@
-/********************************************************************************************
+﻿/********************************************************************************************
  ** CustomWindow is a custom QWidget that allows tou to create custom windows for your app.
  ** Copyright (C) 2016  Francesc Martinez <es.linkedin.com/in/cescmm/en>
  **
@@ -49,6 +49,7 @@ struct Accumulated_Weight
   bool is_tasbeegh_o_azala = false;
   bool has_meter = true;
 };
+
 class CustomWindow : public QWidget
 {
     Q_OBJECT
