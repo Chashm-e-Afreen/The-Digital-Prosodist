@@ -124,6 +124,12 @@
           <height>22</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Apalu</family>
+          <italic>false</italic>
+         </font>
+        </property>
        </widget>
       </item>
       <item>
@@ -234,6 +240,12 @@
    </item>
    <item>
     <widget class="QWidget" name="centralWidget" native="true">
+     <property name="font">
+      <font>
+       <family>Alegreya</family>
+       <italic>false</italic>
+      </font>
+     </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2"/>

@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/new/fonts">
+        <file>Apalu.ttf</file>
+        <file>Mehr Nastaliq Web version 1.0 beta (1).ttf</file>
+        <file>assistant.regular.ttf</file>
+    </qresource>
+</RCC>

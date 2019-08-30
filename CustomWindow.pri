@@ -12,6 +12,7 @@ FORMS    += \
     CustomWindow.ui
 
 RESOURCES += \
+    $$PWD/fonts.qrc \
     CustomWindow.qrc
 
 OTHER_FILES += \

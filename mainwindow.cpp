@@ -11,6 +11,7 @@
 
 #include <QTextCodec>
 #include <QFile>
+#include <QFontDatabase>
 #include <QTextStream>
 #include <QMessageBox>
 #include <QSet>
@@ -25,7 +26,9 @@
 CustomWindow::CustomWindow(QWidget *parent) : QWidget(parent), ui(new Ui::CustomWindow)
 {
     QFile file(":/CustomWindow.css");
-
+    QFontDatabase::addApplicationFont(":/new/fonts/Mehr Nastaliq Web version 1.0 beta (1).ttf");
+    QFontDatabase::addApplicationFont(":/new/fonts/Apalu.ttf");
+    QFontDatabase::addApplicationFont(":/new/fonts/assistant.regular.ttf");
     if (file.open(QFile::ReadOnly))
     {
         setStyleSheet(file.readAll());
@@ -2023,7 +2026,7 @@ void CustomWindow::execute_taqti_program()
 
 void CustomWindow::execute_islah_program()
 {
-    QVector<QVector<Accumulated_Weight>> accumulated_weights = {};
+  QVector<QVector<Accumulated_Weight>> accumulated_weights = {};
 
   QVector<QStringList> user_entered_lines = get_user_input();
 
@@ -2084,6 +2087,7 @@ void CustomWindow::execute_islah_program()
 
          ui->textEdit->insertPlainText("\n");
 
+
          continue;
         }
 
@@ -2117,14 +2121,17 @@ void CustomWindow::execute_islah_program()
       display_arkans(words_murrabs_weights_all_lines[i]);
 
       ui->textEdit->insertPlainText("\n");
-
-
+     // QString meter = Meter_map.find()
       if (!has_a_valid_verse) has_a_valid_verse = true;
     }
 
   if (has_a_valid_verse && !most_matched_meters.empty())
       {
-        ui->textEdit->insertHtml(u8"<br/> اشعار کا موازنہ اس بحر سے کیا گیا ہے:  <br/><br/> ");
+       if(most_matched_meters.size()==1)
+                 ui->textEdit->insertHtml(u8"<br/> اشعار کا موازنہ اس بحر سے کیا گیا ہے:  <br/><br/> ");
+       else {
+                ui->textEdit->insertHtml(u8"<br/> اشعار کا موازنہ ان بحور سے کیا گیا ہے:  <br/><br/> ");
+       }
 
         for (auto& meter: most_matched_meters)
         {
