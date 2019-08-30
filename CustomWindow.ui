@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>523</width>
-    <height>221</height>
+    <width>872</width>
+    <height>520</height>
    </rect>
   </property>
   <property name="font">
@@ -260,9 +260,11 @@
             <pointsize>10</pointsize>
            </font>
           </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
+          </property>
           <property name="styleSheet">
-           <string notr="true">background-color:  #cfd8dc
-;</string>
+           <string notr="true"/>
           </property>
           <property name="text">
            <string>اصلاح</string>
@@ -277,9 +279,11 @@
             <pointsize>10</pointsize>
            </font>
           </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
+          </property>
           <property name="styleSheet">
-           <string notr="true">background-color:  #cfd8dc
-;</string>
+           <string notr="true"/>
           </property>
           <property name="text">
            <string>تقطیع</string>
@@ -319,6 +323,9 @@ p, li { white-space: pre-wrap; }
           <bold>false</bold>
          </font>
         </property>
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
         <property name="styleSheet">
          <string notr="true">background-color:  #eeeeee ;</string>
         </property>
@@ -336,6 +343,9 @@ p, li { white-space: pre-wrap; }
           <weight>50</weight>
           <bold>false</bold>
          </font>
+        </property>
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
         </property>
         <property name="styleSheet">
          <string notr="true">background-color:  #eeeeee ;</string>

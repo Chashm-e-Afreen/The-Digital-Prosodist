@@ -317,11 +317,7 @@
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory"></value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/Muhammad Rehan/Documents/GitHub/build-Program1-Desktop_Qt_5_13_0_MinGW_32_bit-Debug</value>
-   </valuemap>
-   <value type="int" key="ProjectExplorer.Target.RunConfigurationCount">1</value>
   </valuemap>
- </data>
  <data>
   <variable>ProjectExplorer.Project.TargetCount</variable>
   <value type="int">1</value>

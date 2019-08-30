@@ -1,4 +1,4 @@
-/********************************************************************************************
+﻿/********************************************************************************************
  ** CustomWindow is a custom QWidget that allows tou to create custom windows for your app.
  ** Copyright (C) 2016  Francesc Martinez <es.linkedin.com/in/cescmm/en>
  **
@@ -49,6 +49,7 @@ struct Accumulated_Weight
   bool is_tasbeegh_o_azala = false;
   bool has_meter = true;
 };
+
 class CustomWindow : public QWidget
 {
     Q_OBJECT
@@ -213,6 +214,7 @@ private:
          */
         void resizeWhenFDiagCursor (const QPoint &p);
        // Ui::MainWindow *ui;
+
         QShortcut* push_button_shortcut;
         QShortcut* push_button_2_shortcut;
 
@@ -237,10 +239,14 @@ private:
         QVector<Accumulated_Weight> get_accumulated_weight(const QVector<QStringList>& words_murrab_weight_per_line);
         QVector<int> get_weights_in_decimal(const QVector<QString>& accumulated_weights);
 
+        QString islah_best_meter_bin;
+
         bool has_different_weights(QString word);
 
         void display_arkans(const QVector<QStringList>& words_murrab_weight_per_line);
         void display_meters(const QVector<QStringList>& words_murrab_weight_per_line);
+
+        Accumulated_Weight islah(QVector<Accumulated_Weight> accumulated_weights_per_line, const QVector<QString>& meters);
 
         void execute_taqti_program();
         void execute_islah_program();
