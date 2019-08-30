@@ -177,6 +177,9 @@ p, li { white-space: pre-wrap; }
           <bold>false</bold>
          </font>
         </property>
+        <property name="toolTip">
+         <string>Esc</string>
+        </property>
         <property name="styleSheet">
          <string notr="true"/>
         </property>
@@ -211,7 +214,7 @@ p, li { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>720</width>
-     <height>17</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="font">
