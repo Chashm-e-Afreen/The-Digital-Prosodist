@@ -18,6 +18,7 @@
 #include <chrono>
 #include "edit_dist.h"
 #include "meters-def.h"
+#include "levenshtein.h"
 
 #define TOTAL_DICT_WORDS 99217
 
@@ -81,7 +82,7 @@ CustomWindow::CustomWindow(QWidget *parent) : QWidget(parent), ui(new Ui::Custom
 
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 
-    QString dict_file_path = "C:/Users/Muhammad Rehan/Desktop/projects/SmallPillsOfQt-master/CustomWindow - 1/CustomWindow/data/words_murrab_weight_unique.txt";
+    QString dict_file_path = "C:/Users/Muhammad Rehan/Documents/GitHub/murgh-e-chaman/data/words_murrab_weight_unique.txt";
 
     QFile file_read(dict_file_path);
 

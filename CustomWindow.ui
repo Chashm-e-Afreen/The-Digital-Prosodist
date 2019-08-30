@@ -273,8 +273,11 @@
       <item>
        <widget class="QTextEdit" name="textEdit">
         <property name="styleSheet">
-         <string notr="true">align:right;
-font: 14pt &quot;Assistant,Mehr Nastaliq Web&quot;;</string>
+         <string notr="true">font: 14pt &quot;Assistant,Mehr Nastaliq Web&quot;;
+align: right;</string>
+        </property>
+        <property name="locale">
+         <locale language="Urdu" country="Pakistan"/>
         </property>
        </widget>
       </item>
