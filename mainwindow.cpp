@@ -1272,7 +1272,7 @@
                 prev_accumulated_weight_size = new_accumulated_weight_size;
             }
 
-            if (i != 0  && accumulated_weights[i].bin.back()!= '0' && (prev_word_last_letter != L'ا' && prev_word_last_letter != L'ہ' && prev_word_last_letter != L'ۂ' &&
+            if (i != 0 && accumulated_weights[i].bin.back()!= '0' && (prev_word_last_letter != L'ا' && prev_word_last_letter != L'ہ' && prev_word_last_letter != L'ۂ' &&
                             prev_word_last_letter != L'ے' && prev_word_last_letter != L'ؤ' && prev_word_last_letter != L'ں'))
             {
 
