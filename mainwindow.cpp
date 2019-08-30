@@ -1005,7 +1005,7 @@ QString accumulate(const QStringList& weights, QString seperator = "")
     return accum;
 }
 
-Accumulated_Weight islah(QVector<Accumulated_Weight> accumulated_weights_per_line, const QVector<QString>& meters)
+Accumulated_Weight CustomWindow::islah(QVector<Accumulated_Weight> accumulated_weights_per_line, const QVector<QString>& meters)
 {
 
     QVector<Accumulated_Weight> orig_accumulated_weight_per_line = accumulated_weights_per_line;
@@ -1072,6 +1072,7 @@ Accumulated_Weight islah(QVector<Accumulated_Weight> accumulated_weights_per_lin
         {
             best_rejected_count = min_rejected_count;
             best_accumulated_weight = min_rejected_accumulated_weight;
+            islah_best_meter_bin = QString::fromStdWString(meter_bin);
         }
     }
 
@@ -2137,6 +2138,19 @@ void CustomWindow::execute_islah_program()
         }
 
         Accumulated_Weight aw = islah(accumulated_weights[i], most_matched_meters);
+
+        auto meter_name_it = Names_map.find(islah_best_meter_bin.toStdWString());
+        auto meter_it = Meter_map.find(islah_best_meter_bin.toStdWString());
+
+        // Displaying the meters here
+        if (meter_name_it != Names_map.end())
+        {
+            ui->textEdit->insertHtml(u8"<span style='color:rgb(112, 112, 177);'>" + QString::fromStdWString(meter_name_it->second) + u8"</span><br/> ");
+        }
+        if (meter_it != Meter_map.end())
+        {
+            ui->textEdit->insertHtml(u8"<span style='color:grey'>" + QString::fromStdWString(meter_it->second) + u8"</span><br/> ");
+        }
 
         for (int j = 0; j < aw.weights.size(); j++)
         {
