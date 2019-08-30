@@ -46,7 +46,7 @@ CustomWindow::CustomWindow(QWidget *parent) : QWidget(parent), ui(new Ui::Custom
     ui->pbMax->setMouseTracking(true);
     ui->pbClose->setMouseTracking(true);
     ui->centralWidget->setMouseTracking(true);
-    ui->textEdit->setAlignment(Qt::AlignRight);
+ //   ui->textEdit->setAlignment(Qt::AlignRight);
     addAction(ui->actionClose);
 
     connect(ui->pbMin, &QPushButton::clicked, this, &CustomWindow::minimizeBtnClicked);
