@@ -2197,7 +2197,7 @@
                 auto it = Names_map.find(meter.toStdWString());
                 auto it2 = Meter_map.find(meter.toStdWString());
 
-                ui->textEdit->insertHtml((it != Names_map.end()) ? (QString::fromStdWString(it->second) + " (" + QString::fromStdWString(it2->second) + ") <br/> " ): "");
+                ui->textEdit->insertHtml(((it != Names_map.end()) ? (QString::fromStdWString(it->second) + " (" + u8"<span style='color:#ad1457 '>"+ QString::fromStdWString(it2->second) + ") <br/> " ): "") + u8"</span> ");
             }
         }
 
