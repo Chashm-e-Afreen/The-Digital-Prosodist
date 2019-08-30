@@ -14,7 +14,7 @@
 #include <QTextStream>
 #include <QMessageBox>
 #include <QSet>
-#include <QFontDialog>
+#include <QInputDialog>
 #include <chrono>
 #include "edit_dist.h"
 #include "meters-def.h"
@@ -45,7 +45,7 @@ CustomWindow::CustomWindow(QWidget *parent) : QWidget(parent), ui(new Ui::Custom
     ui->pbMax->setMouseTracking(true);
     ui->pbClose->setMouseTracking(true);
     ui->centralWidget->setMouseTracking(true);
-
+    ui->textEdit->setAlignment(Qt::AlignRight);
     addAction(ui->actionClose);
 
     connect(ui->pbMin, &QPushButton::clicked, this, &CustomWindow::minimizeBtnClicked);
@@ -75,7 +75,7 @@ CustomWindow::CustomWindow(QWidget *parent) : QWidget(parent), ui(new Ui::Custom
 
 
 
-    textedit_html = prev_islah_text = prev_taqti_text = "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0//EN' 'http://www.w3.org/TR/REC-html40/strict.dtd'><html><head><meta name='qrichtext' content='1' /><style type='text/css'>* { align:right; } p, li { white-space: pre-wrap; }</style></head><body style=\"font-family:'Assistant, Mehr Nastaliq Web'; font-size:15pt; font-weight:400; font-style:normal;\"><p align='right' style='-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;'></p></body></html>";
+   textedit_html = prev_islah_text = prev_taqti_text = "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0//EN' 'http://www.w3.org/TR/REC-html40/strict.dtd'><html><head><meta name='qrichtext' content='1' /><style type='text/css'>* { align:right; } p, li { white-space: pre-wrap; }</style></head><body style=\"font-family:'Assistant, Mehr Nastaliq Web'; font-size:15pt; font-weight:400; font-style:normal;\"><p align='right' style='-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;'></p></body></html>";
 
     mode = ProgramMode::TAQTI;
 
@@ -1002,59 +1002,77 @@ QString accumulate(const QStringList& weights, QString seperator = "")
   return accum;
 }
 
-Accumulated_Weight islah(QVector<Accumulated_Weight>& accumulated_weights_per_line, const QString& meter)
+Accumulated_Weight islah(QVector<Accumulated_Weight> accumulated_weights_per_line, const QVector<QString>& meters)
 {
-  Accumulated_Weight* best_accumulated_weight = nullptr;
-  int min_rejected_count = INT_MAX;
 
-  std::wstring meter_bin = meter.toStdWString();
+  QVector<Accumulated_Weight> orig_accumulated_weight_per_line = accumulated_weights_per_line;
 
+  Accumulated_Weight best_accumulated_weight;
+  int best_rejected_count = INT_MAX;
 
-  for (int i = 0; i < accumulated_weights_per_line.size(); i++)
+  for (int h = 0; h < meters.size(); h++)
     {
+      std::wstring meter_bin = meters[h].toStdWString();
 
-      Q_ASSERT(accumulated_weights_per_line[i].bin == accumulate(accumulated_weights_per_line[i].weights));
-      Q_ASSERT(accumulated_weights_per_line[i].weights.size() == accumulated_weights_per_line[i].words.size());
-      Q_ASSERT(accumulated_weights_per_line[i].words.size() == accumulated_weights_per_line[i].rejected.size());
+      Accumulated_Weight min_rejected_accumulated_weight;
+      int min_rejected_count = INT_MAX;
 
-      size_t cur_loc = 0;
+      accumulated_weights_per_line = orig_accumulated_weight_per_line;
 
-      for (int j = 0; j < accumulated_weights_per_line[i].weights.size(); j++)
+      for (int i = 0; i < accumulated_weights_per_line.size(); i++)
         {
 
-          std::wstring cur_weight = accumulated_weights_per_line[i].weights[j].toStdWString();
+          Q_ASSERT(accumulated_weights_per_line[i].bin == accumulate(accumulated_weights_per_line[i].weights));
+          Q_ASSERT(accumulated_weights_per_line[i].weights.size() == accumulated_weights_per_line[i].words.size());
+          Q_ASSERT(accumulated_weights_per_line[i].words.size() == accumulated_weights_per_line[i].rejected.size());
 
-          size_t find_loc = meter_bin.find(cur_weight, cur_loc);
+          size_t cur_loc = 0;
 
-          if (find_loc != cur_loc)
+          for (int j = 0; j < accumulated_weights_per_line[i].weights.size(); j++)
             {
-              accumulated_weights_per_line[i].rejected[j] = true;
+
+              std::wstring cur_weight = accumulated_weights_per_line[i].weights[j].toStdWString();
+
+              size_t find_loc = meter_bin.find(cur_weight, cur_loc);
+
+              if (find_loc != cur_loc)
+                {
+                  accumulated_weights_per_line[i].rejected[j] = true;
+                  accumulated_weights_per_line[i].rejected_count++;
+                }
+
+              cur_loc += cur_weight.size();
+
+            }
+
+          //  Q_ASSERT(accumulated_weights_per_line[i].rejected_count <= accumulated_weights_per_line[i].rejected.size());
+
+          if (!accumulated_weights_per_line[i].rejected.empty() && meter_bin.size() > cur_loc)
+            {
+              accumulated_weights_per_line[i].rejected.back() = true;
               accumulated_weights_per_line[i].rejected_count++;
             }
 
-          cur_loc += cur_weight.size();
+          if (accumulated_weights_per_line[i].rejected_count != 0)
+            {
+              accumulated_weights_per_line[i].has_meter = false;
+            }
 
+          if (accumulated_weights_per_line[i].rejected_count < min_rejected_count)
+            {
+              min_rejected_accumulated_weight = accumulated_weights_per_line[i];
+              min_rejected_count = accumulated_weights_per_line[i].rejected_count;
+            }
         }
 
-      if (!accumulated_weights_per_line[i].rejected.empty() && meter_bin.size() > cur_loc)
+      if (min_rejected_count < best_rejected_count)
         {
-          accumulated_weights_per_line[i].rejected.back() = true;
-          accumulated_weights_per_line[i].rejected_count++;
-        }
-
-      if (accumulated_weights_per_line[i].rejected_count != 0)
-        {
-          accumulated_weights_per_line[i].has_meter = false;
-        }
-
-      if (accumulated_weights_per_line[i].rejected_count < min_rejected_count)
-        {
-          best_accumulated_weight = &accumulated_weights_per_line[i];
-          min_rejected_count = accumulated_weights_per_line[i].rejected_count;
+          best_rejected_count = min_rejected_count;
+          best_accumulated_weight = min_rejected_accumulated_weight;
         }
     }
 
-  return (best_accumulated_weight  ? *best_accumulated_weight : Accumulated_Weight());
+  return best_accumulated_weight;
 }
 
 QStringList get_matched_meters(QVector<Accumulated_Weight>& accumulated_weights)
@@ -1395,7 +1413,7 @@ QVector<Accumulated_Weight> CustomWindow::get_accumulated_weight(const QVector<Q
             {
               //              if(accumulated_weights[k].back() != L'ا' && accumulated_weights[k].back() != L'و')
               //                {
-              if(prev_word_last_letter ==L'ی' && individual_word == u8"و")
+              if(prev_word_last_letter == L'ی' && individual_word == u8"و")
                 {
                   accumulated_weights[k].bin += L'1';
                   accumulated_weights[k].weights.back() += L'1';
@@ -1407,12 +1425,12 @@ QVector<Accumulated_Weight> CustomWindow::get_accumulated_weight(const QVector<Q
                   Accumulated_Weight new_accumulated_weight2 = accumulated_weights[k];
                   new_accumulated_weight2.bin.chop(1);
                   new_accumulated_weight2.weights.back().chop(1);
-                  new_accumulated_weight.bin += L'1';
-                  new_accumulated_weight.weights.back() += L'1';
+                  new_accumulated_weight2.bin += L'1';
+                  new_accumulated_weight2.weights.back() += L'1';
 
                   Accumulated_Weight new_accumulated_weight3 = new_accumulated_weight2;
-                  new_accumulated_weight3.bin += L'1';
-                  new_accumulated_weight3.words.back() += L'1';
+                  new_accumulated_weight3.bin += L'0';
+                  new_accumulated_weight3.weights.back() += L'0';
 
                   Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
                   Q_ASSERT(new_accumulated_weight2.bin == accumulate(new_accumulated_weight2.weights));
@@ -1809,10 +1827,12 @@ QString get_closest_meter(const QVector<QVector<Accumulated_Weight>>& accumulate
   return max_closest_meter;
 }
 
-QString max_count_meter(const QVector<QStringList>& found_meters, QVector<QVector<Accumulated_Weight>>& accumulated_weights_all_lines)
+QVector<QString> max_count_meter(const QVector<QStringList>& found_meters, QVector<QVector<Accumulated_Weight>> accumulated_weights_all_lines)
 {
   QMap<QString, int> meters_count_in_line;
-  QString max_meter;
+
+  QVector<QString> max_meters = {};
+
   int count = 0;
 
   for (int i = 0; i < found_meters.size(); i++)
@@ -1828,17 +1848,133 @@ QString max_count_meter(const QVector<QStringList>& found_meters, QVector<QVecto
       if (it.value() > count)
         {
           count = it.value();
-          max_meter = it.key();
+
+          if (max_meters.isEmpty())
+            max_meters.push_back(it.key());
+          else
+            max_meters.front() = it.key();
         }
     }
 
   if (count == 0)
     {
-      QString closest_meter = get_closest_meter(accumulated_weights_all_lines);/*"1101010110101011010101101010";  //  ہزج مثمن سالم | مفاعیلن مفاعیلن مفاعیلن مفاعیلن*/
-      max_meter = closest_meter;
+      QString closest_meter = get_closest_meter(accumulated_weights_all_lines);
+
+      max_meters.push_back(closest_meter);
     }
 
-  return max_meter;
+  QString max_found_meter = max_meters.front();
+
+  if(max_found_meter == "10110101110101110101110" || max_found_meter == "10110101110101110101010" || max_found_meter == "1110101110101110101110" || max_found_meter == "1110101110101110101010" )
+    {
+      if(max_found_meter == "10110101110101110101110" )
+        {
+          max_meters.push_back("10110101110101110101010");
+          max_meters.push_back("1110101110101110101110");
+          max_meters.push_back("1110101110101110101010");
+        }
+      else if(max_found_meter == "10110101110101110101010" )
+        {
+          max_meters.push_back("10110101110101110101110");
+          max_meters.push_back("1110101110101110101110");
+          max_meters.push_back("1110101110101110101010");
+        }
+      else if(max_found_meter == "1110101110101110101110" )
+        {
+          max_meters.push_back("10110101110101110101010");
+          max_meters.push_back("10110101110101110101110");
+          max_meters.push_back("1110101110101110101010");
+        }
+      else if(max_found_meter == "1110101110101110101010" )
+        {
+          max_meters.push_back("10110101110101110101010");
+          max_meters.push_back("1110101110101110101110");
+          max_meters.push_back("10110101110101110101110");
+        }
+    }
+
+  else if(max_found_meter == "10110101101101110" || max_found_meter == "10110101101101010" || max_found_meter == "1110101101101110" || max_found_meter == "1110101101101010" )
+    {
+      if(max_found_meter == "10110101101101110" )
+        {
+          max_meters.push_back("10110101101101010");
+          max_meters.push_back("1110101101101110");
+          max_meters.push_back("1110101101101010");
+        }
+      else if(max_found_meter == "10110101101101010" )
+        {
+          max_meters.push_back("10110101101101110");
+          max_meters.push_back("1110101101101110");
+          max_meters.push_back("1110101101101010");
+        }
+      else if(max_found_meter == "1110101101101110" )
+        {
+          max_meters.push_back("1110101101101010");
+          max_meters.push_back("10110101101101110");
+          max_meters.push_back("10110101101101010");
+        }
+      else if(max_found_meter == "1110101101101010" )
+        {
+          max_meters.push_back("1110101101101110");
+          max_meters.push_back("10110101101101110");
+          max_meters.push_back("10110101101101010");
+        }
+    }
+
+  else if(max_found_meter == "10110101110101110" || max_found_meter == "10110101110101010" || max_found_meter == "1110101110101110" || max_found_meter == "1110101110101010" )
+    {
+      if(max_found_meter == "10110101110101110" )
+        {
+          max_meters.push_back("10110101110101010");
+          max_meters.push_back("1110101110101110");
+          max_meters.push_back("1110101110101010");
+        }
+      else if(max_found_meter == "10110101101101010" )
+        {
+          max_meters.push_back("10110101110101110");
+          max_meters.push_back("1110101110101110");
+          max_meters.push_back("1110101110101010");
+        }
+      else if(max_found_meter == "1110101101101110" )
+        {
+          max_meters.push_back("10110101101101010");
+          max_meters.push_back("10110101110101110");
+          max_meters.push_back("1110101110101010");
+        }
+      else if(max_found_meter == "1110101101101010" )
+        {
+          max_meters.push_back("1110101101101110");
+          max_meters.push_back("10110101110101110");
+          max_meters.push_back("10110101101101010");
+        }
+    }
+
+  else if(max_found_meter == "1101101110101101101110" || max_found_meter == "1101101110101101101010")
+    {
+      if(max_found_meter == "1101101110101101101110" )
+        {
+          max_meters.push_back("1101101110101101101010");
+        }
+      else if(max_found_meter == "1101101110101101101010" )
+        {
+          max_meters.push_back("1101101110101101101110");
+        }
+
+    }
+
+  else if(max_found_meter == "1010111011011010" || max_found_meter == "1010101011011010")
+    {
+      if(max_found_meter == "1010111011011010" )
+        {
+          max_meters.push_back("1010101011011010");
+        }
+      else if(max_found_meter == "1010101011011010" )
+        {
+          max_meters.push_back("1010111011011010");
+        }
+    }
+
+  return max_meters;
 }
 
 QStringList CustomWindow::get_unrecognized_words(const QStringList& user_entered_line, const QVector<QStringList>& words_murrabs_weight_per_line)
@@ -1886,7 +2022,7 @@ void CustomWindow::execute_taqti_program()
 
 void CustomWindow::execute_islah_program()
 {
-  QVector<QVector<Accumulated_Weight>> accumulated_weights;
+    QVector<QVector<Accumulated_Weight>> accumulated_weights = {};
 
   QVector<QStringList> user_entered_lines = get_user_input();
 
@@ -1913,10 +2049,10 @@ void CustomWindow::execute_islah_program()
   ui->textEdit->clear();
   ui->textEdit->setHtml(textedit_html);
 
-  QString most_matched_meter;
+  QVector<QString> most_matched_meters = {};
 
   if (!accumulated_weights.isEmpty())
-    most_matched_meter = max_count_meter(all_matched_meters, accumulated_weights);
+   most_matched_meters = max_count_meter(all_matched_meters, accumulated_weights);
 
   bool has_a_valid_verse = false;
 
@@ -1950,7 +2086,7 @@ void CustomWindow::execute_islah_program()
          continue;
         }
 
-      Accumulated_Weight aw = islah(accumulated_weights[i], most_matched_meter);
+      Accumulated_Weight aw = islah(accumulated_weights[i], most_matched_meters);
 
       for (int j = 0; j < aw.weights.size(); j++)
         {
@@ -1985,18 +2121,32 @@ void CustomWindow::execute_islah_program()
       if (!has_a_valid_verse) has_a_valid_verse = true;
     }
 
-  auto it = Names_map.find(most_matched_meter.toStdWString());
-  auto it2 = Meter_map.find(most_matched_meter.toStdWString());
+  if (has_a_valid_verse && !most_matched_meters.empty())
+      {
+        ui->textEdit->insertHtml(u8"<br/> اشعار کا موازنہ اس بحر سے کیا گیا ہے:  <br/><br/> ");
 
-  if (has_a_valid_verse)
-  {
-      ui->textEdit->insertPlainText(u8"\n اشعار کا موازنہ اس بحر سے کیا گیا ہے:  " );
-    ui->textEdit->insertHtml(u8"<span style='color:#ad1457'>" + ((it != Names_map.end()) ? (QString::fromStdWString(it->second) +u8"</span> " + " (" + u8"<span style='color:#ff0066  '>" + QString::fromStdWString(it2->second) + u8"</span> "+  ")" ): ""));
+        for (auto& meter: most_matched_meters)
+        {
+          auto it = Names_map.find(meter.toStdWString());
+          auto it2 = Meter_map.find(meter.toStdWString());
+
+         ui->textEdit->insertHtml((it != Names_map.end()) ? (QString::fromStdWString(it->second) + " (" + QString::fromStdWString(it2->second) + ") <br/> " ): "");
+        }
+      }
+
+    ui->textEdit->moveCursor(QTextCursor::Start);
 
   }
-  ui->textEdit->moveCursor(QTextCursor::Start);
 
-}
+//  if (has_a_valid_verse)
+//  {
+//      ui->textEdit->insertPlainText(u8"\n اشعار کا موازنہ اس بحر سے کیا گیا ہے:  " );
+//    ui->textEdit->insertHtml(u8"<span style='color:#ad1457'>" + ((it != Names_map.end()) ? (QString::fromStdWString(it->second) +u8"</span> " + " (" + u8"<span style='color:#ff0066  '>" + QString::fromStdWString(it2->second) + u8"</span> "+  ")" ): ""));
+
+//  }
+//  ui->textEdit->moveCursor(QTextCursor::Start);
+
+//}
 
 void CustomWindow::on_pushButton_clicked()
 {

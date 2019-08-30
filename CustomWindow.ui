@@ -10,6 +10,12 @@
     <height>520</height>
    </rect>
   </property>
+  <property name="font">
+   <font>
+    <family>Monotype Corsiva</family>
+    <italic>true</italic>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
@@ -274,7 +280,7 @@
        <widget class="QTextEdit" name="textEdit">
         <property name="styleSheet">
          <string notr="true">font: 14pt &quot;Assistant,Mehr Nastaliq Web&quot;;
-align: right;</string>
+</string>
         </property>
         <property name="locale">
          <locale language="Urdu" country="Pakistan"/>
@@ -285,8 +291,8 @@ align: right;</string>
        <widget class="QPushButton" name="pushButton">
         <property name="font">
          <font>
-          <family>Indesign Signature</family>
-          <pointsize>9</pointsize>
+          <family>Apalu</family>
+          <pointsize>13</pointsize>
           <weight>50</weight>
           <bold>false</bold>
          </font>
@@ -303,8 +309,8 @@ align: right;</string>
        <widget class="QPushButton" name="pushButton_2">
         <property name="font">
          <font>
-          <family>Indesign Signature</family>
-          <pointsize>9</pointsize>
+          <family>Apalu</family>
+          <pointsize>13</pointsize>
           <weight>50</weight>
           <bold>false</bold>
          </font>
