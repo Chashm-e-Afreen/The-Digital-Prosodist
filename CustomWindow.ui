@@ -291,8 +291,8 @@
        <widget class="QPushButton" name="pushButton">
         <property name="font">
          <font>
-          <family>Indesign Signature</family>
-          <pointsize>9</pointsize>
+          <family>Apalu</family>
+          <pointsize>13</pointsize>
           <weight>50</weight>
           <bold>false</bold>
          </font>
@@ -309,8 +309,8 @@
        <widget class="QPushButton" name="pushButton_2">
         <property name="font">
          <font>
-          <family>Indesign Signature</family>
-          <pointsize>9</pointsize>
+          <family>Apalu</family>
+          <pointsize>13</pointsize>
           <weight>50</weight>
           <bold>false</bold>
          </font>
