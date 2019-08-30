@@ -1,4 +1,4 @@
-#include "CustomWindow.h"
+﻿#include "CustomWindow.h"
 #include "ui_CustomWindow.h"
 #include <QPainter>
 #include <QMouseEvent>
@@ -18,7 +18,6 @@
 #include <chrono>
 #include "edit_dist.h"
 #include "meters-def.h"
-#include "levenshtein.h"
 
 #define TOTAL_DICT_WORDS 99217
 
@@ -57,7 +56,7 @@ CustomWindow::CustomWindow(QWidget *parent) : QWidget(parent), ui(new Ui::Custom
     const auto geo = settings.value("geometry").toRect();
     const auto desktopSize = QApplication::desktop();
 
-    if (geo.height() > 0 and geo.x() < desktopSize->width() and geo.width() > 0 and geo.y() < desktopSize->height())
+    if (geo.height() > 0 && geo.x() < desktopSize->width() && geo.width() > 0 && geo.y() < desktopSize->height())
 		setGeometry(geo);
 
 	if (settings.value("maximized").toBool())
@@ -82,14 +81,14 @@ CustomWindow::CustomWindow(QWidget *parent) : QWidget(parent), ui(new Ui::Custom
 
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 
-    QString dict_file_path = "C:/Users/Muhammad Rehan/Documents/GitHub/murgh-e-chaman/data/words_murrab_weight_unique.txt";
+    QString dict_file_path = "data/words_murrab_weight_unique.txt";
 
     QFile file_read(dict_file_path);
 
     if (!file_read.open(QIODevice::ReadOnly | QIODevice::Text))
       {
         QMessageBox::warning(this, "Error", "Unable to open dictionary to fetch words");
-        return;
+        close();
       }
 
     QTextStream text_stream(&file_read);
@@ -203,8 +202,8 @@ void CustomWindow::mousePressEvent(QMouseEvent *e)
             else if (xPos <= PIXELS_TO_ACT)
                 mResizeHorLeft = true;
         }
-        else if (xPos >= PIXELS_TO_ACT and xPos < ui->titleBar->geometry().width()
-                 and yPos >= PIXELS_TO_ACT and yPos < ui->titleBar->geometry().height())
+        else if (xPos >= PIXELS_TO_ACT && xPos < ui->titleBar->geometry().width()
+                 && yPos >= PIXELS_TO_ACT && yPos < ui->titleBar->geometry().height())
         {
             mMoveWidget = true;
             mDragPosition = e->globalPos() - frameGeometry().topLeft();
@@ -233,9 +232,9 @@ void CustomWindow::mouseDoubleClickEvent(QMouseEvent *e)
     const auto xPos = e->pos().x();
     const auto yPos = e->pos().y();
 
-    if (xPos < tbMenuGeo.right() and yPos < tbMenuGeo.bottom() and xPos >= tbMenuGeo.x() and yPos >= tbMenuGeo.y() and ui->tbMenu->isVisible())
+    if (xPos < tbMenuGeo.right() && yPos < tbMenuGeo.bottom() && xPos >= tbMenuGeo.x() && yPos >= tbMenuGeo.y() && ui->tbMenu->isVisible())
         close();
-    else if (mTitleMode != TitleMode::FullScreenMode and xPos < titleBarGeo.width() and yPos < titleBarGeo.height())
+    else if (mTitleMode != TitleMode::FullScreenMode && xPos < titleBarGeo.width() && yPos < titleBarGeo.height())
         maximizeBtnClicked();
 
     e->accept();
@@ -354,7 +353,7 @@ void CustomWindow::resizeWhenBDiagCursor(const QPoint &p)
         newHeight = yMouse;
     }
 
-    if (newWidth >= minimumSizeHint().width() and newHeight >= minimumSizeHint().height())
+    if (newWidth >= minimumSizeHint().width() && newHeight >= minimumSizeHint().height())
     {
         resize(newWidth, newHeight);
         move(newX, newY);
@@ -387,7 +386,7 @@ void CustomWindow::resizeWhenFDiagCursor(const QPoint &p)
         int newY = geoY + yMouse;
         int newHeight = wHeight - yMouse;
 
-        if (newWidth >= minimumSizeHint().width() and newHeight >= minimumSizeHint().height())
+        if (newWidth >= minimumSizeHint().width() && newHeight >= minimumSizeHint().height())
         {
             resize(newWidth, newHeight);
             move(newX, newY);
@@ -468,7 +467,7 @@ void CustomWindow::setTitlebarMenu(QMenu *menu, const QString &icon)
 
 void CustomWindow::maximizeBtnClicked()
 {
-    if (isFullScreen() or isMaximized())
+    if (isFullScreen() || isMaximized())
     {
         ui->pbMax->setIcon(QIcon(":/ui/images/app_max.png"));
         setWindowState(windowState() & ~Qt::WindowFullScreen & ~Qt::WindowMaximized);

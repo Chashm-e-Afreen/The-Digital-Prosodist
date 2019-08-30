@@ -5,7 +5,6 @@ HEADERS  += \
     $$PWD/../../../../../Documents/GitHub/murgh-e-chaman/levenshtein.h \
     $$PWD/CustomWindow.h \
     $$PWD/edit_dist.h \
-    $$PWD/levenshtein.h \
     $$PWD/meters-def.h
 
 FORMS    += \
