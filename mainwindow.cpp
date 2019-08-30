@@ -46,7 +46,7 @@ CustomWindow::CustomWindow(QWidget *parent) : QWidget(parent), ui(new Ui::Custom
     ui->pbMax->setMouseTracking(true);
     ui->pbClose->setMouseTracking(true);
     ui->centralWidget->setMouseTracking(true);
-
+    ui->textEdit->setAlignment(Qt::AlignRight);
     addAction(ui->actionClose);
 
     connect(ui->pbMin, &QPushButton::clicked, this, &CustomWindow::minimizeBtnClicked);
@@ -1023,9 +1023,9 @@ Accumulated_Weight islah(QVector<Accumulated_Weight> accumulated_weights_per_lin
       for (int i = 0; i < accumulated_weights_per_line.size(); i++)
         {
 
-          //Q_ASSERT(accumulated_weights_per_line[i].bin == accumulate(accumulated_weights_per_line[i].weights));
-          //Q_ASSERT(accumulated_weights_per_line[i].weights.size() == accumulated_weights_per_line[i].words.size());
-          //Q_ASSERT(accumulated_weights_per_line[i].words.size() == accumulated_weights_per_line[i].rejected.size());
+          Q_ASSERT(accumulated_weights_per_line[i].bin == accumulate(accumulated_weights_per_line[i].weights));
+          Q_ASSERT(accumulated_weights_per_line[i].weights.size() == accumulated_weights_per_line[i].words.size());
+          Q_ASSERT(accumulated_weights_per_line[i].words.size() == accumulated_weights_per_line[i].rejected.size());
 
           size_t cur_loc = 0;
 
@@ -1046,7 +1046,7 @@ Accumulated_Weight islah(QVector<Accumulated_Weight> accumulated_weights_per_lin
 
             }
 
-          //  //Q_ASSERT(accumulated_weights_per_line[i].rejected_count <= accumulated_weights_per_line[i].rejected.size());
+          //  Q_ASSERT(accumulated_weights_per_line[i].rejected_count <= accumulated_weights_per_line[i].rejected.size());
 
           if (!accumulated_weights_per_line[i].rejected.empty() && meter_bin.size() > cur_loc)
             {
@@ -1170,7 +1170,7 @@ QVector<Accumulated_Weight> CustomWindow::get_accumulated_weight(const QVector<Q
               accumulated_weights[j].weights.push_back(individual_weight);
               accumulated_weights[j].rejected.push_back(false);
 
-              //Q_ASSERT(accumulated_weights[j].bin == accumulate(accumulated_weights[j].weights));
+              Q_ASSERT(accumulated_weights[j].bin == accumulate(accumulated_weights[j].weights));
             }
         }
 
@@ -1198,7 +1198,7 @@ QVector<Accumulated_Weight> CustomWindow::get_accumulated_weight(const QVector<Q
 
                   accumulated_weights.push_back(new_acc_weight);
 
-                  //Q_ASSERT(new_acc_weight.bin == accumulate(new_acc_weight.weights));
+                  Q_ASSERT(new_acc_weight.bin == accumulate(new_acc_weight.weights));
 
                   new_accumulated_weight_size++;
                 }
@@ -1219,7 +1219,7 @@ QVector<Accumulated_Weight> CustomWindow::get_accumulated_weight(const QVector<Q
                       accumulated_weights.push_back(new_acc_weight);
 
 
-                      //Q_ASSERT(new_acc_weight.bin == accumulate(new_acc_weight.weights));
+                      Q_ASSERT(new_acc_weight.bin == accumulate(new_acc_weight.weights));
 
                       new_accumulated_weight_size++;
                     }
@@ -1261,7 +1261,7 @@ QVector<Accumulated_Weight> CustomWindow::get_accumulated_weight(const QVector<Q
 
                   accumulated_weights.push_back(new_accumulated_weight);
 
-                  //Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+                  Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
                   new_accumulated_weight_size++;
                   }
                 }
@@ -1293,7 +1293,7 @@ QVector<Accumulated_Weight> CustomWindow::get_accumulated_weight(const QVector<Q
 
                   accumulated_weights.push_back(new_accumulated_weight);
 
-                  //Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+                  Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
                   new_accumulated_weight_size++;
                     }
@@ -1346,15 +1346,15 @@ QVector<Accumulated_Weight> CustomWindow::get_accumulated_weight(const QVector<Q
                   accumulated_weights.push_back(new_accumulated_weight_two);
                   accumulated_weights.push_back(new_accumulated_weight_three);
 
-                  //Q_ASSERT(new_accumulated_weight_two.bin == accumulate(new_accumulated_weight_two.weights));
-                  //Q_ASSERT(new_accumulated_weight_three.bin == accumulate(new_accumulated_weight_three.weights));
+                  Q_ASSERT(new_accumulated_weight_two.bin == accumulate(new_accumulated_weight_two.weights));
+                  Q_ASSERT(new_accumulated_weight_three.bin == accumulate(new_accumulated_weight_three.weights));
 
                   new_accumulated_weight_size += 2;
                 }
 
               accumulated_weights.push_back(new_accumulated_weight_one);
 
-              //Q_ASSERT(new_accumulated_weight_one.bin == accumulate(new_accumulated_weight_one.weights));
+              Q_ASSERT(new_accumulated_weight_one.bin == accumulate(new_accumulated_weight_one.weights));
 
               new_accumulated_weight_size++;
             }
@@ -1378,7 +1378,7 @@ QVector<Accumulated_Weight> CustomWindow::get_accumulated_weight(const QVector<Q
 
               accumulated_weights.push_back(new_accumulated_weight);
 
-              //Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+              Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
               new_accumulated_weight_size++;
             }
@@ -1401,7 +1401,7 @@ QVector<Accumulated_Weight> CustomWindow::get_accumulated_weight(const QVector<Q
 
               accumulated_weights.push_back(new_accumulated_weight);
 
-              //Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+              Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
               new_accumulated_weight_size++;
             }
@@ -1431,11 +1431,11 @@ QVector<Accumulated_Weight> CustomWindow::get_accumulated_weight(const QVector<Q
 
                   Accumulated_Weight new_accumulated_weight3 = new_accumulated_weight2;
                   new_accumulated_weight3.bin += L'0';
-                  new_accumulated_weight3.words.back() += L'0';
+                  new_accumulated_weight3.weights.back() += L'0';
 
-                  //Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
-                  //Q_ASSERT(new_accumulated_weight2.bin == accumulate(new_accumulated_weight2.weights));
-                  //Q_ASSERT(new_accumulated_weight3.bin == accumulate(new_accumulated_weight3.weights));
+                  Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+                  Q_ASSERT(new_accumulated_weight2.bin == accumulate(new_accumulated_weight2.weights));
+                  Q_ASSERT(new_accumulated_weight3.bin == accumulate(new_accumulated_weight3.weights));
 
                   accumulated_weights.push_back(new_accumulated_weight);
                   accumulated_weights.push_back(new_accumulated_weight2);
@@ -1454,7 +1454,7 @@ QVector<Accumulated_Weight> CustomWindow::get_accumulated_weight(const QVector<Q
                   new_accumulated_weight.bin += L'0';
                   new_accumulated_weight.weights.back() += L'0';
 
-                  //Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+                  Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
                   accumulated_weights.push_back(new_accumulated_weight);
 
@@ -1489,7 +1489,7 @@ QVector<Accumulated_Weight> CustomWindow::get_accumulated_weight(const QVector<Q
 
                   accumulated_weights.push_back(new_accumulated_weight);
 
-                  //Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+                  Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
                   new_accumulated_weight_size++;
                 }
