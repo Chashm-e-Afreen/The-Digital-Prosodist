@@ -12,8 +12,8 @@
   </property>
   <property name="font">
    <font>
-    <family>Monotype Corsiva</family>
-    <italic>true</italic>
+    <family>Assistant</family>
+    <italic>false</italic>
    </font>
   </property>
   <property name="windowTitle">
@@ -242,7 +242,7 @@
     <widget class="QWidget" name="centralWidget" native="true">
      <property name="font">
       <font>
-       <family>Alegreya</family>
+       <family>Assistant</family>
        <italic>false</italic>
       </font>
      </property>
