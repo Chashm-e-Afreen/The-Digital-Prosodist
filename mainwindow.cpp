@@ -1,4 +1,4 @@
-﻿    #include "CustomWindow.h"
+﻿    #include "MainWindow.h"
     #include "ui_CustomWindow.h"
     #include <QPainter>
     #include <QMouseEvent>
@@ -16,9 +16,11 @@
     #include <QMessageBox>
     #include <QSet>
     #include <QInputDialog>
-    #include <chrono>
+
     #include "edit_dist.h"
     #include "meters-def.h"
+
+// #include <chrono>
 
     #define TOTAL_DICT_WORDS 99217
 
@@ -67,12 +69,16 @@
             showMaximized();
             ui->pbMax->setIcon(QIcon(":/ui/images/app_rest.png"));
         }
-        push_button_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Return), this);
+
+        push_button_shortcut = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_Return), this);
         push_button_2_shortcut = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+        taqti_button_shortcut = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_Right), this);
+        islah_button_shortcut = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_Left), this);
 
         connect(this->push_button_shortcut, SIGNAL(activated()), this, SLOT(on_pushButton_clicked()));
         connect(this->push_button_2_shortcut, SIGNAL(activated()), this, SLOT(on_pushButton_2_clicked()));
-
+        connect(this->taqti_button_shortcut, SIGNAL(activated()), this, SLOT(on_taqtiButton_clicked()));
+        connect(this->islah_button_shortcut, SIGNAL(activated()), this, SLOT(on_islahButton_clicked()));
 
         islah_but_stylesheet = taqti_but_stylesheet;
 
@@ -84,7 +90,7 @@
 
         QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 
-        QString dict_file_path = "data/words_murrab_weight_unique.txt";
+        QString dict_file_path = "data/lughat.txt";
 
         QFile file_read(dict_file_path);
 
@@ -510,7 +516,7 @@
     QVector<QStringList> CustomWindow::get_user_input()
     {
 
-        auto start = std::chrono::high_resolution_clock::now();
+        //auto start = std::chrono::high_resolution_clock::now();
 
         QVector<QStringList> user_input;
 
@@ -534,16 +540,16 @@
             user_input[i] = individual_words;
         }
 
-        std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
+        //std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
 
-        QTextStream(stdout) << "Splitting user input: " << end.count() << "\n";
+        //QTextStream(stdout) << "Splitting user input: " << end.count() << "\n";
 
         return user_input;
     }
 
     QVector<QStringList> CustomWindow::get_murrab_weight(const QStringList& user_entered_line)
     {
-        auto start = std::chrono::high_resolution_clock::now();
+        //auto start = std::chrono::high_resolution_clock::now();
         QVector<QStringList> words_murrabs_weights(user_entered_line.size());
 
 
@@ -916,9 +922,9 @@
             }
         }
 
-        std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
+        //std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
 
-        QTextStream(stdout) << "Fetching Weights: " << end.count() << "\n";
+        //QTextStream(stdout) << "Fetching Weights: " << end.count() << "\n";
 
         return words_murrabs_weights;
     }
@@ -1025,9 +1031,9 @@
             for (int i = 0; i < accumulated_weights_per_line.size(); i++)
             {
 
-                Q_ASSERT(accumulated_weights_per_line[i].bin == accumulate(accumulated_weights_per_line[i].weights));
-                Q_ASSERT(accumulated_weights_per_line[i].weights.size() == accumulated_weights_per_line[i].words.size());
-                Q_ASSERT(accumulated_weights_per_line[i].words.size() == accumulated_weights_per_line[i].rejected.size());
+                // Q_ASSERT(accumulated_weights_per_line[i].bin == accumulate(accumulated_weights_per_line[i].weights));
+                // Q_ASSERT(accumulated_weights_per_line[i].weights.size() == accumulated_weights_per_line[i].words.size());
+                // Q_ASSERT(accumulated_weights_per_line[i].words.size() == accumulated_weights_per_line[i].rejected.size());
 
                 size_t cur_loc = 0;
 
@@ -1048,7 +1054,7 @@
 
                 }
 
-                //  Q_ASSERT(accumulated_weights_per_line[i].rejected_count <= accumulated_weights_per_line[i].rejected.size());
+                //  // Q_ASSERT(accumulated_weights_per_line[i].rejected_count <= accumulated_weights_per_line[i].rejected.size());
 
                 if (!accumulated_weights_per_line[i].rejected.empty() && meter_bin.size() > cur_loc)
                 {
@@ -1082,7 +1088,7 @@
     // Returns the index of word weight in accumulated weights that has first letter letter on given index
     int has_first_letter_on_index (const Accumulated_Weight& accumulated_weight, int index)
     {
-        Q_ASSERT(accumulated_weight.bin == accumulate(accumulated_weight.weights));
+        // Q_ASSERT(accumulated_weight.bin == accumulate(accumulated_weight.weights));
 
         if (index < 0 || index >= accumulated_weight.bin.size() || accumulated_weight.weights.isEmpty()) return -1;
 
@@ -1149,7 +1155,7 @@
 
     QVector<Accumulated_Weight> CustomWindow::get_accumulated_weight(const QVector<QStringList>& words_murrab_weight_per_line)
     {
-        auto start = std::chrono::high_resolution_clock::now();
+        //auto start = std::chrono::high_resolution_clock::now();
 
         int size = words_murrab_weight_per_line.size();
 
@@ -1164,9 +1170,12 @@
         int prev_accumulated_weight_size = new_accumulated_weight_size;
 
         bool has_word_not_present_in_dict = false;
+        bool continue_outer_loop = false;
 
         for (int i = 0; i < size; i++) // Iterating every word
         {
+
+            continue_outer_loop = false;
 
             if (words_murrab_weight_per_line[i].size() != 3)
             {
@@ -1200,14 +1209,22 @@
                 for (int j = 0; j < accumulated_weights.size(); j++)
                 {
                     if (individual_word == u8"و")
+                    {
+
+                        if (i == 1 && words_murrab_weight_per_line[0].size() != 3)
+                        {
+                            continue_outer_loop = true;
+                        }
+
                         break;
+                    }
 
                     accumulated_weights[j].bin += individual_weight;
                     accumulated_weights[j].words.push_back(individual_word);
                     accumulated_weights[j].weights.push_back(individual_weight);
                     accumulated_weights[j].rejected.push_back(false);
 
-                    Q_ASSERT(accumulated_weights[j].bin == accumulate(accumulated_weights[j].weights));
+                    // Q_ASSERT(accumulated_weights[j].bin == accumulate(accumulated_weights[j].weights));
                 }
             }
 
@@ -1235,7 +1252,7 @@
 
                         accumulated_weights.push_back(new_acc_weight);
 
-                        Q_ASSERT(new_acc_weight.bin == accumulate(new_acc_weight.weights));
+                        // Q_ASSERT(new_acc_weight.bin == accumulate(new_acc_weight.weights));
 
                         new_accumulated_weight_size++;
                     }
@@ -1256,7 +1273,7 @@
                             accumulated_weights.push_back(new_acc_weight);
 
 
-                            Q_ASSERT(new_acc_weight.bin == accumulate(new_acc_weight.weights));
+                            // Q_ASSERT(new_acc_weight.bin == accumulate(new_acc_weight.weights));
 
                             new_accumulated_weight_size++;
                         }
@@ -1272,6 +1289,11 @@
                 prev_accumulated_weight_size = new_accumulated_weight_size;
             }
 
+            if (continue_outer_loop)
+            {
+                continue;
+            }
+
             if (i != 0 && (prev_word_last_letter != L'ا' && prev_word_last_letter != L'ہ' && prev_word_last_letter != L'ۂ' &&
                             prev_word_last_letter != L'ے' && prev_word_last_letter != L'ؤ' && prev_word_last_letter != L'ں'))
             {
@@ -1282,6 +1304,13 @@
                     {
                         if (accumulated_weights[k].bin.size() - accumulated_weights[k].weights.back().size() - 1 >= 0)
                         {
+
+                            if (!accumulated_weights[k].weights.back().isEmpty() && ((prev_word_last_letter == L'و'
+                                || prev_word_last_letter == L'ی') && accumulated_weights[k].weights.back().back() != L'1'))
+                            {
+                                continue;
+                            }
+
                             Accumulated_Weight new_accumulated_weight;
 
                             new_accumulated_weight.bin = accumulated_weights[k].bin;
@@ -1298,7 +1327,7 @@
 
                             accumulated_weights.push_back(new_accumulated_weight);
 
-                            Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+                            // Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
                             new_accumulated_weight_size++;
                         }
                     }
@@ -1312,6 +1341,12 @@
 
                         if (accumulated_weights[k].bin.size() - accumulated_weights[k].weights.back().size() - 1 >= 0)
                         {
+                            if (!accumulated_weights[k].weights.back().isEmpty() && ((prev_word_last_letter == L'و'
+                                || prev_word_last_letter == L'ی') && accumulated_weights[k].weights.back().back() != L'1'))
+                            {
+                                continue;
+                            }
+
                             Accumulated_Weight new_accumulated_weight;
 
                             new_accumulated_weight.bin = accumulated_weights[k].bin;
@@ -1330,7 +1365,7 @@
 
                             accumulated_weights.push_back(new_accumulated_weight);
 
-                            Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+                            // Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
                             new_accumulated_weight_size++;
                         }
@@ -1383,15 +1418,15 @@
                         accumulated_weights.push_back(new_accumulated_weight_two);
                         accumulated_weights.push_back(new_accumulated_weight_three);
 
-                        Q_ASSERT(new_accumulated_weight_two.bin == accumulate(new_accumulated_weight_two.weights));
-                        Q_ASSERT(new_accumulated_weight_three.bin == accumulate(new_accumulated_weight_three.weights));
+                        // Q_ASSERT(new_accumulated_weight_two.bin == accumulate(new_accumulated_weight_two.weights));
+                        // Q_ASSERT(new_accumulated_weight_three.bin == accumulate(new_accumulated_weight_three.weights));
 
                         new_accumulated_weight_size += 2;
                     }
 
                     accumulated_weights.push_back(new_accumulated_weight_one);
 
-                    Q_ASSERT(new_accumulated_weight_one.bin == accumulate(new_accumulated_weight_one.weights));
+                    // Q_ASSERT(new_accumulated_weight_one.bin == accumulate(new_accumulated_weight_one.weights));
 
                     new_accumulated_weight_size++;
                 }
@@ -1415,7 +1450,7 @@
 
                     accumulated_weights.push_back(new_accumulated_weight);
 
-                    Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+                    // Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
                     new_accumulated_weight_size++;
                 }
@@ -1438,7 +1473,7 @@
 
                     accumulated_weights.push_back(new_accumulated_weight);
 
-                    Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+                    // Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
                     new_accumulated_weight_size++;
                 }
@@ -1470,9 +1505,9 @@
                         new_accumulated_weight3.bin += L'0';
                         new_accumulated_weight3.weights.back() += L'0';
 
-                        Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
-                        Q_ASSERT(new_accumulated_weight2.bin == accumulate(new_accumulated_weight2.weights));
-                        Q_ASSERT(new_accumulated_weight3.bin == accumulate(new_accumulated_weight3.weights));
+                        // Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+                        // Q_ASSERT(new_accumulated_weight2.bin == accumulate(new_accumulated_weight2.weights));
+                        // Q_ASSERT(new_accumulated_weight3.bin == accumulate(new_accumulated_weight3.weights));
 
                         accumulated_weights.push_back(new_accumulated_weight);
                         accumulated_weights.push_back(new_accumulated_weight2);
@@ -1491,7 +1526,7 @@
                         new_accumulated_weight.bin += L'0';
                         new_accumulated_weight.weights.back() += L'0';
 
-                        Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+                        // Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
                         accumulated_weights.push_back(new_accumulated_weight);
 
@@ -1526,7 +1561,7 @@
 
                         accumulated_weights.push_back(new_accumulated_weight);
 
-                        Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+                        // Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
                         new_accumulated_weight_size++;
                     }
@@ -1540,9 +1575,9 @@
         }
 
 
-        std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
+        //std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
 
-        QTextStream(stdout) << "Fetching Accumulative Weight: " << end.count() << "\n";
+        //QTextStream(stdout) << "Fetching Accumulative Weight: " << end.count() << "\n";
 
         if (has_word_not_present_in_dict)
         {
@@ -1557,7 +1592,7 @@
 
     void CustomWindow::display_meters(const QVector<QStringList>& words_murrab_weight_per_line)
     {
-        auto start = std::chrono::high_resolution_clock::now();
+        //auto start = std::chrono::high_resolution_clock::now();
 
         int size = words_murrab_weight_per_line.size();
 
@@ -1777,14 +1812,14 @@
 
         }
 
-        std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
+        //std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
 
-        QTextStream(stdout) << "Displaying Names: " << end.count() << "\n";
+        //QTextStream(stdout) << "Displaying Names: " << end.count() << "\n";
     }
 
     void CustomWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_per_line)
     {
-        auto start = std::chrono::high_resolution_clock::now();
+        //auto start = std::chrono::high_resolution_clock::now();
         int size = words_murrab_weight_per_line.size();
 
         if (size <= 0)
@@ -1826,9 +1861,9 @@
             }
         }
 
-        std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
+        //std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
 
-        QTextStream(stdout) << "Displaying Arkans: " << end.count() << "\n";
+        //QTextStream(stdout) << "Displaying Arkans: " << end.count() << "\n";
     }
 
     QString get_closest_meter(const QVector<QVector<Accumulated_Weight>>& accumulated_weights_all_lines)
@@ -2042,6 +2077,7 @@
 
         return unrecognized_words;
     }
+
     void CustomWindow::execute_taqti_program()
     {
         QVector<QStringList> user_entered_lines = get_user_input();
@@ -2132,7 +2168,7 @@
 
                 display_arkans(words_murrabs_weights_all_lines[i]);
 
-                ui->textEdit->insertPlainText("\n");
+                ui->textEdit->insertPlainText("\n\n");
 
                 continue;
             }
@@ -2217,7 +2253,7 @@
 
     void CustomWindow::on_pushButton_clicked()
     {
-        auto start = std::chrono::high_resolution_clock::now();
+        //auto start = std::chrono::high_resolution_clock::now();
 
         if (mode == ProgramMode::TAQTI)
         {
@@ -2228,9 +2264,9 @@
             execute_islah_program();
         }
 
-        std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
+        //std::chrono::duration<double> end = std::chrono::high_resolution_clock::now() - start;
 
-        QTextStream(stdout) << "Time elapsed: " << end.count() << "\n ---------------------------- \n";
+        //QTextStream(stdout) << "Time elapsed: " << end.count() << "\n ---------------------------- \n";
     }
 
     void CustomWindow::on_pushButton_2_clicked()
