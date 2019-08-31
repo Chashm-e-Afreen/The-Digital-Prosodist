@@ -22,6 +22,7 @@
 #include <QWidget>
 #include <algorithm>
 #include <QShortcut>
+
 class QMenu;
 
 namespace Ui
@@ -217,6 +218,8 @@ private:
 
         QShortcut* push_button_shortcut;
         QShortcut* push_button_2_shortcut;
+        QShortcut* taqti_button_shortcut;
+        QShortcut* islah_button_shortcut;
 
         QHash<QString, QStringList> dict_cache;
 
