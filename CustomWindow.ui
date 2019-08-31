@@ -339,7 +339,7 @@ p, li { white-space: pre-wrap; }
          <cursorShape>PointingHandCursor</cursorShape>
         </property>
         <property name="toolTip">
-         <string>Ctrl + Enter</string>
+         <string>Alt + Enter</string>
         </property>
         <property name="toolTipDuration">
          <number>-1</number>

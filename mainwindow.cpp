@@ -70,7 +70,7 @@
             ui->pbMax->setIcon(QIcon(":/ui/images/app_rest.png"));
         }
 
-        push_button_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Return), this);
+        push_button_shortcut = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_Return), this);
         push_button_2_shortcut = new QShortcut(QKeySequence(Qt::Key_Escape), this);
         taqti_button_shortcut = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_Right), this);
         islah_button_shortcut = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_Left), this);
@@ -1210,6 +1210,7 @@
                 {
                     if (individual_word == u8"و")
                     {
+
                         if (i == 1 && words_murrab_weight_per_line[0].size() != 3)
                         {
                             continue_outer_loop = true;
