@@ -2,8 +2,7 @@ SOURCES  += \
     $$PWD/MainWindow.cpp
 
 HEADERS  += \
-    $$PWD/../../../../../Documents/GitHub/murgh-e-chaman/levenshtein.h \
-    $$PWD/CustomWindow.h \
+    $$PWD/MainWindow.h \
     $$PWD/edit_dist.h \
     $$PWD/meters-def.h
 
@@ -13,6 +12,8 @@ FORMS    += \
 RESOURCES += \
     $$PWD/fonts.qrc \
     CustomWindow.qrc
+
+RC_ICONS = executable.ico
 
 OTHER_FILES += \
     CustomWindow.css
