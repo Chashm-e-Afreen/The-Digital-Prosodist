@@ -1,4 +1,4 @@
-    #include "MainWindow.h"
+﻿    #include "MainWindow.h"
     #include "ui_CustomWindow.h"
     #include <QPainter>
     #include <QMouseEvent>
