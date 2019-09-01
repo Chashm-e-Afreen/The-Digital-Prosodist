@@ -1,8 +1,0 @@
-﻿1. The program should be able to deal with words that end with وں and یں endings e.g. کتابوں، غزلوں ، نظمیں
-etc. 
-If ends with یں or وں
-	weight.back() = 1
-	weight2 = weight + "0";
-else ends with یں or وں and preceeding letter is ا or و
-	weight = weight + "1";
-	weight2 = weight + "10"
