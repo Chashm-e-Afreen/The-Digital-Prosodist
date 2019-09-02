@@ -1,3 +1,3 @@
 - Words with no weight in the verse don't get displayed.
-We'd want them tl be displayed with their corresponding weight simply being a space. 
-- The words and their respective binary weights and their tehleel should be aligned.
+We'd want them tl be displayed with their corresponding weight simply being a space.    (solved)
+- The words and their respective binary weights and their tehleel should be aligned.    (solved)

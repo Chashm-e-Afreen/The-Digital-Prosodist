@@ -4,6 +4,7 @@
     #include <QMouseEvent>
     #include <QDesktopWidget>
     #include <QCursor>
+    #include <QTextTable>
     #include <QSettings>
     #include <QStyleOption>
     #include <QMenu>
@@ -20,7 +21,7 @@
     #include "edit_dist.h"
     #include "meters-def.h"
 
-// #include <chrono>
+ #include <chrono>
 
     #define TOTAL_DICT_WORDS 99217
 
@@ -1031,9 +1032,9 @@
             for (int i = 0; i < accumulated_weights_per_line.size(); i++)
             {
 
-                // Q_ASSERT(accumulated_weights_per_line[i].bin == accumulate(accumulated_weights_per_line[i].weights));
-                // Q_ASSERT(accumulated_weights_per_line[i].weights.size() == accumulated_weights_per_line[i].words.size());
-                // Q_ASSERT(accumulated_weights_per_line[i].words.size() == accumulated_weights_per_line[i].rejected.size());
+                Q_ASSERT(accumulated_weights_per_line[i].bin == accumulate(accumulated_weights_per_line[i].weights));
+                Q_ASSERT(accumulated_weights_per_line[i].weights.size() == accumulated_weights_per_line[i].words.size());
+                Q_ASSERT(accumulated_weights_per_line[i].words.size() == accumulated_weights_per_line[i].rejected.size());
 
                 size_t cur_loc = 0;
 
@@ -1054,7 +1055,7 @@
 
                 }
 
-                //  // Q_ASSERT(accumulated_weights_per_line[i].rejected_count <= accumulated_weights_per_line[i].rejected.size());
+                Q_ASSERT(accumulated_weights_per_line[i].rejected_count <= accumulated_weights_per_line[i].rejected.size());
 
                 if (!accumulated_weights_per_line[i].rejected.empty() && meter_bin.size() > cur_loc)
                 {
@@ -1088,7 +1089,7 @@
     // Returns the index of word weight in accumulated weights that has first letter letter on given index
     int has_first_letter_on_index (const Accumulated_Weight& accumulated_weight, int index)
     {
-        // Q_ASSERT(accumulated_weight.bin == accumulate(accumulated_weight.weights));
+        Q_ASSERT(accumulated_weight.bin == accumulate(accumulated_weight.weights));
 
         if (index < 0 || index >= accumulated_weight.bin.size() || accumulated_weight.weights.isEmpty()) return -1;
 
@@ -1211,7 +1212,7 @@
                     if (individual_word == u8"و")
                     {
 
-                        if (i == 1 && words_murrab_weight_per_line[0].size() != 3)
+                        if ((i == 1 && words_murrab_weight_per_line[0].size() != 3) || i == 0)
                         {
                             continue_outer_loop = true;
                         }
@@ -1224,7 +1225,7 @@
                     accumulated_weights[j].weights.push_back(individual_weight);
                     accumulated_weights[j].rejected.push_back(false);
 
-                    // Q_ASSERT(accumulated_weights[j].bin == accumulate(accumulated_weights[j].weights));
+                    Q_ASSERT(accumulated_weights[j].bin == accumulate(accumulated_weights[j].weights));
                 }
             }
 
@@ -1252,7 +1253,7 @@
 
                         accumulated_weights.push_back(new_acc_weight);
 
-                        // Q_ASSERT(new_acc_weight.bin == accumulate(new_acc_weight.weights));
+                        Q_ASSERT(new_acc_weight.bin == accumulate(new_acc_weight.weights));
 
                         new_accumulated_weight_size++;
                     }
@@ -1273,7 +1274,7 @@
                             accumulated_weights.push_back(new_acc_weight);
 
 
-                            // Q_ASSERT(new_acc_weight.bin == accumulate(new_acc_weight.weights));
+                            Q_ASSERT(new_acc_weight.bin == accumulate(new_acc_weight.weights));
 
                             new_accumulated_weight_size++;
                         }
@@ -1327,7 +1328,8 @@
 
                             accumulated_weights.push_back(new_accumulated_weight);
 
-                            // Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+                            Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+
                             new_accumulated_weight_size++;
                         }
                     }
@@ -1365,7 +1367,7 @@
 
                             accumulated_weights.push_back(new_accumulated_weight);
 
-                            // Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+                            Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
                             new_accumulated_weight_size++;
                         }
@@ -1418,15 +1420,15 @@
                         accumulated_weights.push_back(new_accumulated_weight_two);
                         accumulated_weights.push_back(new_accumulated_weight_three);
 
-                        // Q_ASSERT(new_accumulated_weight_two.bin == accumulate(new_accumulated_weight_two.weights));
-                        // Q_ASSERT(new_accumulated_weight_three.bin == accumulate(new_accumulated_weight_three.weights));
+                        Q_ASSERT(new_accumulated_weight_two.bin == accumulate(new_accumulated_weight_two.weights));
+                        Q_ASSERT(new_accumulated_weight_three.bin == accumulate(new_accumulated_weight_three.weights));
 
                         new_accumulated_weight_size += 2;
                     }
 
                     accumulated_weights.push_back(new_accumulated_weight_one);
 
-                    // Q_ASSERT(new_accumulated_weight_one.bin == accumulate(new_accumulated_weight_one.weights));
+                     Q_ASSERT(new_accumulated_weight_one.bin == accumulate(new_accumulated_weight_one.weights));
 
                     new_accumulated_weight_size++;
                 }
@@ -1450,7 +1452,7 @@
 
                     accumulated_weights.push_back(new_accumulated_weight);
 
-                    // Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+                     Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
                     new_accumulated_weight_size++;
                 }
@@ -1473,14 +1475,14 @@
 
                     accumulated_weights.push_back(new_accumulated_weight);
 
-                    // Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+                     Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
                     new_accumulated_weight_size++;
                 }
 
             }
 
-            else if (individual_word == u8"و" || ((individual_word.size() > 3 && ((last_two_letters  == u8"یں" && last_three_letters != u8"ئیں")|| last_two_letters == u8"وں")) && dict_cache.find(individual_word) == dict_cache.end()))
+            else if (individual_word == u8"و" || ((individual_word.size() > 3 && ((last_two_letters  == u8"یں" && last_three_letters != u8"ئیں") || last_two_letters == u8"وں")) && dict_cache.find(individual_word) == dict_cache.end()))
             {
                 for (int k = 0; k < prev_accumulated_weight_size; k++)
                 {
@@ -1505,9 +1507,28 @@
                         new_accumulated_weight3.bin += L'0';
                         new_accumulated_weight3.weights.back() += L'0';
 
-                        // Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
-                        // Q_ASSERT(new_accumulated_weight2.bin == accumulate(new_accumulated_weight2.weights));
-                        // Q_ASSERT(new_accumulated_weight3.bin == accumulate(new_accumulated_weight3.weights));
+                        if (individual_word == u8"و") // To make sure that vao is displayed in islah section
+                        {
+                            accumulated_weights[k].words.insert(accumulated_weights[k].words.size(), individual_word);
+                            accumulated_weights[k].weights.insert(accumulated_weights[k].weights.size(), "");
+                            accumulated_weights[k].rejected.insert(accumulated_weights[k].rejected.size(), false);
+
+                            new_accumulated_weight.words.insert(new_accumulated_weight.words.size(), individual_word);
+                            new_accumulated_weight.weights.insert(new_accumulated_weight.weights.size(), "");
+                            new_accumulated_weight.rejected.insert(new_accumulated_weight.rejected.size(), false);
+
+                            new_accumulated_weight2.words.insert(new_accumulated_weight2.words.size(), individual_word);
+                            new_accumulated_weight2.weights.insert(new_accumulated_weight2.weights.size(), "");
+                            new_accumulated_weight2.rejected.insert(new_accumulated_weight2.rejected.size(), false);
+
+                            new_accumulated_weight3.words.insert(new_accumulated_weight3.words.size(), individual_word);
+                            new_accumulated_weight3.weights.insert(new_accumulated_weight3.weights.size(), "");
+                            new_accumulated_weight3.rejected.insert(new_accumulated_weight3.rejected.size(), false);
+                        }
+
+                        Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+                        Q_ASSERT(new_accumulated_weight2.bin == accumulate(new_accumulated_weight2.weights));
+                        Q_ASSERT(new_accumulated_weight3.bin == accumulate(new_accumulated_weight3.weights));
 
                         accumulated_weights.push_back(new_accumulated_weight);
                         accumulated_weights.push_back(new_accumulated_weight2);
@@ -1526,7 +1547,18 @@
                         new_accumulated_weight.bin += L'0';
                         new_accumulated_weight.weights.back() += L'0';
 
-                        // Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+                        if (individual_word == u8"و") // To make sure that vao is displayed in islah section
+                        {
+                            accumulated_weights[k].words.insert(accumulated_weights[k].words.size(), individual_word);
+                            accumulated_weights[k].weights.insert(accumulated_weights[k].weights.size(), "");
+                            accumulated_weights[k].rejected.insert(accumulated_weights[k].rejected.size(), false);
+
+                            new_accumulated_weight.words.insert(new_accumulated_weight.words.size(), individual_word);
+                            new_accumulated_weight.weights.insert(new_accumulated_weight.weights.size(), "");
+                            new_accumulated_weight.rejected.insert(new_accumulated_weight.rejected.size(), false);
+                        }
+
+                        Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
                         accumulated_weights.push_back(new_accumulated_weight);
 
@@ -1561,7 +1593,7 @@
 
                         accumulated_weights.push_back(new_accumulated_weight);
 
-                        // Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
+                        Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
 
                         new_accumulated_weight_size++;
                     }
@@ -1817,7 +1849,7 @@
         //QTextStream(stdout) << "Displaying Names: " << end.count() << "\n";
     }
 
-    void CustomWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_per_line)
+    void CustomWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_per_line, bool display_intable, int row, QTextTable* table)
     {
         //auto start = std::chrono::high_resolution_clock::now();
         int size = words_murrab_weight_per_line.size();
@@ -1825,14 +1857,41 @@
         if (size <= 0)
             return;
 
-        ui->textEdit->insertPlainText(u8"\nتحلیلِ الفاظ: ");
+        QTextTableCell cell;
+        QTextCursor cell_cursor;
 
+        if (!display_intable)
+            ui->textEdit->insertPlainText(u8"\nتحلیلِ الفاظ: ");
+        else
+        {
+            QTextBlockFormat block_format;
+            block_format.setAlignment(Qt::AlignRight);
+
+            cell = table->cellAt(row-1, table->columns()-1);
+            cell_cursor = cell.firstCursorPosition();
+
+            cell_cursor.setBlockFormat(block_format);
+
+            cell_cursor.insertHtml(u8"\nتحلیلِ الفاظ:");
+        }
 
         for (int i = 0; i < size; i++)
         {
+            if (display_intable)
+            {
+                Q_ASSERT(table);
+
+                cell = table->cellAt(row-1, size - i - 1);
+                cell_cursor = cell.firstCursorPosition();
+            }
+
             if (words_murrab_weight_per_line[i].size() != 3)
             {
-                ui->textEdit->insertHtml(u8"<span style='color:red'>٭</span> ");
+                if (!display_intable)
+                    ui->textEdit->insertHtml(u8"<span style='color:red'>٭</span> ");
+                else
+                    cell_cursor.insertHtml(u8"<span style='color:red'>٭</span>");
+
                 continue;
             }
 
@@ -1848,16 +1907,25 @@
 
                 if (has_multiple_weights)
                 {
-                    ui->textEdit->insertHtml(u8"<span style='color:#5900b3'>" + rukan + u8"</span> ");
+                    if (!display_intable)
+                        ui->textEdit->insertHtml(u8"<span style='color:#5900b3'>" + rukan + u8"</span> ");
+                    else
+                        cell_cursor.insertHtml(u8"<span style='color:#5900b3'>" + rukan + u8"</span>");
                 }
                 else
                 {
-                    ui->textEdit->insertPlainText(rukan + " ");
+                    if (!display_intable)
+                        ui->textEdit->insertPlainText(rukan + " ");
+                    else
+                        cell_cursor.insertHtml(rukan + " ");
                 }
             }
             else
             {
-                ui->textEdit->insertHtml(u8"<span style='color:red'>٭</span> ");
+                if (!display_intable)
+                    ui->textEdit->insertHtml(u8"<span style='color:red'>٭</span> ");
+                else
+                    cell_cursor.insertHtml(u8"<span style='color:red'>٭</span>");
             }
         }
 
@@ -2166,8 +2234,6 @@
 
                 ui->textEdit->insertHtml(u8"<span style='color:red'>" + errorMessage + u8"</span> ");
 
-                display_arkans(words_murrabs_weights_all_lines[i]);
-
                 ui->textEdit->insertPlainText("\n\n");
 
                 continue;
@@ -2185,35 +2251,85 @@
             }
             if (meter_it != Meter_map.end())
             {
-                ui->textEdit->insertHtml(u8"<span style='color:grey'>" + QString::fromStdWString(meter_it->second) + u8"</span><br/> ");
+                ui->textEdit->insertHtml(u8"<span style='color:grey'>" + QString::fromStdWString(meter_it->second) + u8"</span> ");
             }
+
+            // Diplaying binary, tehleel and words in table format to keep alignment
+
+            QTextCursor cursor(ui->textEdit->textCursor());
+
+            QTextTableFormat table_format;
+
+            table_format.setAlignment(Qt::AlignRight);
+            table_format.setCellSpacing(15);
+            table_format.setBorder(false);
+
+            int table_rows = 3;
+            int table_coloums = user_entered_lines[i].size() + 1;
+
+            QTextTable* table = cursor.insertTable(table_rows, table_coloums, table_format);
+
+            QTextTableCell cell;
+            QTextCursor cell_cursor;
+
+
+            QTextBlockFormat block_format;
+            block_format.setAlignment(Qt::AlignRight);
+
+            cell = table->cellAt(0, table->columns()-1);
+            cell_cursor = cell.firstCursorPosition();
+
+            cell_cursor.setBlockFormat(block_format);
+
+            cell_cursor.insertText(u8"تدوین:");
 
             for (int j = 0; j < aw.weights.size(); j++)
             {
+                cell = table->cellAt(0, aw.weights.size() - j - 1);
+                cell_cursor = cell.firstCursorPosition();
+
                 if (aw.rejected[j])
                 {
-                    ui->textEdit->insertHtml(u8"<span style='color:red'>" + aw.words[j] + u8"</span> ");
+                    cell_cursor.insertHtml(u8"<span style='color:red'>" + aw.words[j] + u8"</span>");
                 }
                 else
                 {
-                    ui->textEdit->insertHtml(u8"<span style='color:#2e7d32 '>" + aw.words[j] + u8"</span> ");
+                    cell_cursor.insertHtml(u8"<span style='color:#2e7d32 '>" + aw.words[j] + u8"</span>");
                 }
             }
 
-            ui->textEdit->insertPlainText("\n");
+//            block_format.setTopMargin(0);
+//            block_format.setBottomMargin(0);
+
+//            cell  = table->cellAt(1, table->columns()-1);
+//            cell_cursor = cell.firstCursorPosition();
+
+//            cell_cursor.setBlockFormat(block_format);
+
+//            cell_cursor.insertText(u8"اصلاح:");
 
             for (int j = aw.weights.size() - 1; j >= 0; j--)
             {
+                cell = table->cellAt(1, aw.weights.size() - j - 1);
+
+                cell_cursor = cell.firstCursorPosition();
+
+                QTextBlockFormat right_align;
+                right_align.setAlignment(Qt::AlignRight);
+
+                cell_cursor.setBlockFormat(right_align);
+
                 if (aw.rejected[j])
                 {
-                    ui->textEdit->insertHtml(u8"<span style='color:red'>" + aw.weights[j] + u8"</span> ");
+                    cell_cursor.insertHtml(u8"<span style=' margin:10px;color:red;'>" + aw.weights[j] + u8"</span>");
                 }
                 else
                 {
-                    ui->textEdit->insertHtml(u8"<span style='color:#009688'>" +  aw.weights[j] + u8"</span> ");
+                    cell_cursor.insertHtml(u8"<span style=' margin:10px;color:#009688;'>" +  aw.weights[j] + u8"</span>");
                 }
             }
-            display_arkans(words_murrabs_weights_all_lines[i]);
+
+            display_arkans(words_murrabs_weights_all_lines[i], true, 3, table);
 
             ui->textEdit->insertPlainText("\n\n");
             // QString meter = Meter_map.find()
@@ -2224,9 +2340,8 @@
         {
             if(most_matched_meters.size()==1)
                 ui->textEdit->insertHtml(u8"<br/> اشعار کا موازنہ اس بحر سے کیا گیا ہے:  <br/><br/> ");
-            else {
+            else
                 ui->textEdit->insertHtml(u8"<br/> اشعار کا موازنہ ان بحور سے کیا گیا ہے:  <br/><br/> ");
-            }
 
             for (auto& meter: most_matched_meters)
             {
