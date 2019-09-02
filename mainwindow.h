@@ -247,7 +247,7 @@ private:
 
         bool has_different_weights(QString word);
 
-        void display_arkans(const QVector<QStringList>& words_murrab_weight_per_line, bool display_intable = false, QTextTable* table = nullptr);
+        void display_arkans(const QVector<QStringList>& words_murrab_weight_per_line, bool display_intable = false, int row = -1, QTextTable* table = nullptr);
         void display_meters(const QVector<QStringList>& words_murrab_weight_per_line);
 
         Accumulated_Weight islah(QVector<Accumulated_Weight> accumulated_weights_per_line, const QVector<QString>& meters);

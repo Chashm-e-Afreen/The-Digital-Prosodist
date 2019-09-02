@@ -1849,7 +1849,7 @@
         //QTextStream(stdout) << "Displaying Names: " << end.count() << "\n";
     }
 
-    void CustomWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_per_line, bool display_intable, QTextTable* table)
+    void CustomWindow::display_arkans(const QVector<QStringList>& words_murrab_weight_per_line, bool display_intable, int row, QTextTable* table)
     {
         //auto start = std::chrono::high_resolution_clock::now();
         int size = words_murrab_weight_per_line.size();
@@ -1857,11 +1857,23 @@
         if (size <= 0)
             return;
 
+        QTextTableCell cell;
+        QTextCursor cell_cursor;
+
         if (!display_intable)
             ui->textEdit->insertPlainText(u8"\nتحلیلِ الفاظ: ");
+        else
+        {
+            QTextBlockFormat block_format;
+            block_format.setAlignment(Qt::AlignRight);
 
-        QTextTableCell cell;
-        QTextCursor cellCursor;
+            cell = table->cellAt(row-1, table->columns()-1);
+            cell_cursor = cell.firstCursorPosition();
+
+            cell_cursor.setBlockFormat(block_format);
+
+            cell_cursor.insertHtml(u8"\nتحلیلِ الفاظ:");
+        }
 
         for (int i = 0; i < size; i++)
         {
@@ -1869,8 +1881,8 @@
             {
                 Q_ASSERT(table);
 
-                cell = table->cellAt(2, i);
-                cellCursor = cell.firstCursorPosition();
+                cell = table->cellAt(row-1, size - i - 1);
+                cell_cursor = cell.firstCursorPosition();
             }
 
             if (words_murrab_weight_per_line[i].size() != 3)
@@ -1878,7 +1890,7 @@
                 if (!display_intable)
                     ui->textEdit->insertHtml(u8"<span style='color:red'>٭</span> ");
                 else
-                    cellCursor.insertHtml(u8"<span style='color:red'>٭</span> ");
+                    cell_cursor.insertHtml(u8"<span style='color:red'>٭</span>");
 
                 continue;
             }
@@ -1898,14 +1910,14 @@
                     if (!display_intable)
                         ui->textEdit->insertHtml(u8"<span style='color:#5900b3'>" + rukan + u8"</span> ");
                     else
-                        cellCursor.insertHtml(u8"<span style='color:#5900b3'>" + rukan + u8"</span> ");
+                        cell_cursor.insertHtml(u8"<span style='color:#5900b3'>" + rukan + u8"</span>");
                 }
                 else
                 {
                     if (!display_intable)
                         ui->textEdit->insertPlainText(rukan + " ");
                     else
-                        cellCursor.insertHtml(rukan + " ");
+                        cell_cursor.insertHtml(rukan + " ");
                 }
             }
             else
@@ -1913,7 +1925,7 @@
                 if (!display_intable)
                     ui->textEdit->insertHtml(u8"<span style='color:red'>٭</span> ");
                 else
-                    cellCursor.insertHtml(u8"<span style='color:red'>٭</span> ");
+                    cell_cursor.insertHtml(u8"<span style='color:red'>٭</span>");
             }
         }
 
@@ -2249,52 +2261,75 @@
             QTextTableFormat table_format;
 
             table_format.setAlignment(Qt::AlignRight);
-            table_format.setCellSpacing(12);
+            table_format.setCellSpacing(15);
             table_format.setBorder(false);
 
             int table_rows = 3;
-            int table_coloums = user_entered_lines[i].size();
+            int table_coloums = user_entered_lines[i].size() + 1;
 
             QTextTable* table = cursor.insertTable(table_rows, table_coloums, table_format);
 
+            QTextTableCell cell;
+            QTextCursor cell_cursor;
+
+
+            QTextBlockFormat block_format;
+            block_format.setAlignment(Qt::AlignRight);
+
+            cell = table->cellAt(0, table->columns()-1);
+            cell_cursor = cell.firstCursorPosition();
+
+            cell_cursor.setBlockFormat(block_format);
+
+            cell_cursor.insertText(u8"تدوین:");
+
             for (int j = 0; j < aw.weights.size(); j++)
             {
-                QTextTableCell cell = table->cellAt(0, j);
-                QTextCursor cellCursor = cell.firstCursorPosition();
+                cell = table->cellAt(0, aw.weights.size() - j - 1);
+                cell_cursor = cell.firstCursorPosition();
 
                 if (aw.rejected[j])
                 {
-                    cellCursor.insertHtml(u8"<span style='color:red'>" + aw.words[j] + u8"</span>");
+                    cell_cursor.insertHtml(u8"<span style='color:red'>" + aw.words[j] + u8"</span>");
                 }
                 else
                 {
-                    cellCursor.insertHtml(u8"<span style='color:#2e7d32 '>" + aw.words[j] + u8"</span>");
+                    cell_cursor.insertHtml(u8"<span style='color:#2e7d32 '>" + aw.words[j] + u8"</span>");
                 }
             }
 
-            ui->textEdit->insertPlainText("\n");
+//            block_format.setTopMargin(0);
+//            block_format.setBottomMargin(0);
+
+//            cell  = table->cellAt(1, table->columns()-1);
+//            cell_cursor = cell.firstCursorPosition();
+
+//            cell_cursor.setBlockFormat(block_format);
+
+//            cell_cursor.insertText(u8"اصلاح:");
 
             for (int j = aw.weights.size() - 1; j >= 0; j--)
             {
-                QTextTableCell cell = table->cellAt(1, j);
-                QTextCursor cellCursor = cell.firstCursorPosition();
+                cell = table->cellAt(1, aw.weights.size() - j - 1);
 
-                QTextBlockFormat rightAlign;
-                rightAlign.setAlignment(Qt::AlignRight);
+                cell_cursor = cell.firstCursorPosition();
 
-                cellCursor.setBlockFormat(rightAlign);
+                QTextBlockFormat right_align;
+                right_align.setAlignment(Qt::AlignRight);
+
+                cell_cursor.setBlockFormat(right_align);
 
                 if (aw.rejected[j])
                 {
-                    cellCursor.insertHtml(u8"<span style='color:red; align:right;'>" + aw.weights[j] + u8"</span>");
+                    cell_cursor.insertHtml(u8"<span style=' margin:10px;color:red;'>" + aw.weights[j] + u8"</span>");
                 }
                 else
                 {
-                    cellCursor.insertHtml(u8"<span style='color:#009688; align:right;'>" +  aw.weights[j] + u8"</span>");
+                    cell_cursor.insertHtml(u8"<span style=' margin:10px;color:#009688;'>" +  aw.weights[j] + u8"</span>");
                 }
             }
 
-            display_arkans(words_murrabs_weights_all_lines[i], true, table);
+            display_arkans(words_murrabs_weights_all_lines[i], true, 3, table);
 
             ui->textEdit->insertPlainText("\n\n");
             // QString meter = Meter_map.find()
