@@ -1114,6 +1114,11 @@
         for (int i = 0; i < accumulated_weights.size(); i++)
         {
 
+            if (!accumulated_weights[i].bin.isEmpty() && accumulated_weights[i].weights.back() == "1")
+            {
+                continue;
+            }
+
             if(!accumulated_weights[i].bin.isEmpty() && accumulated_weights[i].bin.back()=='1')
             {
                 accumulated_weights[i].bin.chop(1);
@@ -1488,14 +1493,16 @@
                 {
                     //              if(accumulated_weights[k].back() != L'ا' && accumulated_weights[k].back() != L'و')
                     //                {
-                    if(prev_word_last_letter == L'ی' && individual_word == u8"و")
-                    {
+                    if((prev_word_last_letter == L'ی' || prev_word_last_letter == L'ے' || prev_word_last_letter == L'ا') && individual_word == u8"و")
+                   {
                         accumulated_weights[k].bin += L'1';
                         accumulated_weights[k].weights.back() += L'1';
 
                         Accumulated_Weight new_accumulated_weight = accumulated_weights[k];
                         new_accumulated_weight.bin += L'0';
-                        new_accumulated_weight.weights.back() += L'0';
+                        new_accumulated_weight.weights.push_back("0");
+                        new_accumulated_weight.words.push_back(individual_word);
+                        new_accumulated_weight.rejected.push_back(false);
 
                         Accumulated_Weight new_accumulated_weight2 = accumulated_weights[k];
                         new_accumulated_weight2.bin.chop(1);
@@ -1505,7 +1512,9 @@
 
                         Accumulated_Weight new_accumulated_weight3 = new_accumulated_weight2;
                         new_accumulated_weight3.bin += L'0';
-                        new_accumulated_weight3.weights.back() += L'0';
+                        new_accumulated_weight3.weights.insert(new_accumulated_weight3.weights.size(), "0");
+                        new_accumulated_weight3.words.insert(new_accumulated_weight3.words.size(), individual_word);
+                        new_accumulated_weight3.rejected.insert(new_accumulated_weight3.rejected.size(), false);
 
                         if (individual_word == u8"و") // To make sure that vao is displayed in islah section
                         {
@@ -1513,17 +1522,9 @@
                             accumulated_weights[k].weights.insert(accumulated_weights[k].weights.size(), "");
                             accumulated_weights[k].rejected.insert(accumulated_weights[k].rejected.size(), false);
 
-                            new_accumulated_weight.words.insert(new_accumulated_weight.words.size(), individual_word);
-                            new_accumulated_weight.weights.insert(new_accumulated_weight.weights.size(), "");
-                            new_accumulated_weight.rejected.insert(new_accumulated_weight.rejected.size(), false);
-
                             new_accumulated_weight2.words.insert(new_accumulated_weight2.words.size(), individual_word);
                             new_accumulated_weight2.weights.insert(new_accumulated_weight2.weights.size(), "");
                             new_accumulated_weight2.rejected.insert(new_accumulated_weight2.rejected.size(), false);
-
-                            new_accumulated_weight3.words.insert(new_accumulated_weight3.words.size(), individual_word);
-                            new_accumulated_weight3.weights.insert(new_accumulated_weight3.weights.size(), "");
-                            new_accumulated_weight3.rejected.insert(new_accumulated_weight3.rejected.size(), false);
                         }
 
                         Q_ASSERT(new_accumulated_weight.bin == accumulate(new_accumulated_weight.weights));
@@ -1553,8 +1554,10 @@
                             accumulated_weights[k].weights.insert(accumulated_weights[k].weights.size(), "");
                             accumulated_weights[k].rejected.insert(accumulated_weights[k].rejected.size(), false);
 
+                            new_accumulated_weight.weights.back().chop(1);
+
                             new_accumulated_weight.words.insert(new_accumulated_weight.words.size(), individual_word);
-                            new_accumulated_weight.weights.insert(new_accumulated_weight.weights.size(), "");
+                            new_accumulated_weight.weights.insert(new_accumulated_weight.weights.size(), u8"0");
                             new_accumulated_weight.rejected.insert(new_accumulated_weight.rejected.size(), false);
                         }
 
@@ -2241,6 +2244,8 @@
 
             Accumulated_Weight aw = islah(accumulated_weights[i], most_matched_meters);
 
+            if (aw.is_tasbeegh_o_azala) aw.weights.back() += "1";
+
             auto meter_name_it = Names_map.find(islah_best_meter_bin.toStdWString());
             auto meter_it = Meter_map.find(islah_best_meter_bin.toStdWString());
 
@@ -2281,7 +2286,7 @@
 
             cell_cursor.setBlockFormat(block_format);
 
-            cell_cursor.insertText(u8"تدوین:");
+            cell_cursor.insertText(u8"مصرع:");
 
             for (int j = 0; j < aw.weights.size(); j++)
             {
